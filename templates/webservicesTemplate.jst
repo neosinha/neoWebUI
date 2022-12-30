@@ -1,0 +1,52 @@
+/**
+ * Rest APIs for {{appname}}
+ * Generated on {{datetime}}
+ */
+
+
+var serverLocation = location.host;
+var server = "http://" + serverLocation ;
+console.log("Location: "+ server);
+
+var backendmodel = null;
+
+
+
+/**
+ * Class webservice
+ */
+var Webservices = function () {
+    {% for formobj in formobjs %}
+    this.{{ formobj.name.lower() }} = function() {
+          //make an ajax call to API submit_{{formobj.name.lower() }}
+          var dataobj =  {
+                  {% for fld in formobj.fields %} '{{fld.name.lower()}}' : '{{fld.value}}',
+                  {% endfor %}
+                          };
+          $.ajax( {url : server+'/submit_{{formobj.name.lower()}}',
+                  sync: false,
+                  method: "POST",
+                  data : {'data': JSON.stringify(dataobj)},
+                  success: callbacks.{{ formobj.name.lower() }}
+                  });
+    };//end of {{formobj.name.lower()}}
+    {% endfor %}
+};
+
+
+//Callback Class for Webservice
+/**
+*Class : callbacks
+**/
+var Callbacks = function () {
+ {% for formobj in formobjs %}
+
+    this.{{formobj.name.lower()}} = function (msg) {
+        console.log('Callback {{formobj.name.lower()}}'+ msg );
+        backendmodel['{{formobj.name.lower()}}'] = JSON.parse(msg);
+    }
+
+ {% endfor %}
+ };
+
+
