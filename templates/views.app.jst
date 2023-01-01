@@ -1,0 +1,147 @@
+// file holds the code which designs the UI views
+// or bigger/composite UI view elements
+
+var ui = new Bootstrap();
+//var forms = new FormViews();
+var Views = function() {
+
+    //Initial Layout
+    this.initiallayout = function() {
+
+        //initialize a jumbotron object
+        var h1x = ui.h3(null, 'Header', null);
+        var jum = ui.jumbotron('view1', h1x);
+
+
+        //build a tabbed view
+	    var tabs = new Array();
+	    tabs.push({'name' : "AppInfo" , 'content' : this.appInfo() }); //add content for Basic App Info
+	    tabs.push({'name' : "Forms" , 'content' : this.formview() }); //add the tab content for Forms View
+
+	    var navtabs= ui.navtabs('tabbed', 'justified', tabs); //initialize the tab object
+
+	    var notifyarea = ui.createElement('div', 'notify'); //add a notify area
+
+        //add the nav tabs in the jumbotron area
+	    jum.appendChild(navtabs);
+	    jum.appendChild(notifyarea); //add the tabs in the notify area
+
+
+	    //loginview = ui.addSubView(jum, navtabs);
+
+	    //showView([navbar, jum]);
+	    //view = ui.addSubViewById('mcontent', [loginview]);
+	    ui.addSubViewToMain([jum]);
+
+    } ;//end initialView
+
+
+    //Sample Voew Code Routines
+    this.appInfo = function() {
+        var px = ui.createElement('p', 'appinfo');
+        px.innerHTML = 'Example Content for {{appname}}';
+
+        return px;
+
+    } ;
+
+    //Sample Voew Code Routines
+    this.formview = function() {
+        var divx = ui.createElement('div', 'formview');
+        divx.appendChild(ui.br());
+        divx.innerHTML = 'Example Content which shows Forms for {{appname}}';
+
+        {% for formobj in formobjs %}
+                //websx.{{formobj.name.lower()}}(); //webservices call
+                var px = ui.createElement('p', 'para_{{formobj.name.lower()}}');
+                px.innerHTML = 'Form Contents for {{formobj.name}}';
+                divx.appendChild(px);
+                var fx = forms.createview_{{formobj.name.lower()}}();
+                divx.appendChild(fx);
+
+                var subx = ui.createElement('button', '{{formobj.name.lower()}}_submit');
+                subx.setAttribute('class', 'btn btn-warning btn-lg');
+                subx.innerHTML = 'Submit';
+                subx.onclick = function() {
+                    forms.readform_{{formobj.name.lower()}}();
+                    websx.{{formobj.name.lower()}}();
+
+                }
+                //subx.setAttribute('onclick', 'function() {forms.readform_{{formobj.name.lower()}}(); };' );
+
+                divx.appendChild(subx);
+                divx.appendChild(ui.br());
+
+
+                var divr = ui.createElement('div', '{{formobj.name.lower()}}_rid'); //DIV area for Ajax Callback result
+                divr.setAttribute('class', 'well well-lg');
+                divx.appendChild(divr);
+
+                hrx = ui.createElement('hr', 'div_{{formobj.name.lower()}}');
+                divx.appendChild(hrx);
+
+
+        {% endfor %}
+        return divx;
+
+    } ;
+
+
+
+    //basic navbar handler
+    this.appNavBar = function() {
+	    navbar = ui.navbar("navarea", '{{appname}}'); //Initialize App Header
+	    ui.addSubViewToMain([navbar]);
+    } ;
+
+
+
+
+
+} ;
+
+
+
+
+function loadPanels() {
+	px = new Array(); 
+	h3 = ui.h3('id1', 'Good header');
+	b = ui.button('id2', 'Click Me', 'clicker();');
+	
+	px.push({'type': 'default', 'heading': 'Panel1', 'content': b });
+	
+	panel = ui.createPanels('uipanel', px);
+
+	return panel;
+}
+
+function clicker() {
+	alert('Clicked..');
+}
+
+
+
+
+function loginView() {
+	var h1x = ui.h3(null, '', null);
+	jum = ui.jumbotron('view1', h1x);
+
+	tabs = new Array();
+	tabs.push({'name' : "Login" , 'content' : designLoginForm()});
+	tabs.push({'name' : "Register" , 'content' : registerForm()});
+	navtabs= ui.navtabs('tabbed', 'justified', tabs);
+	
+	notifyarea = ui.createElement('div', 'notify');
+	
+	jum.appendChild(navtabs);
+	jum.appendChild(notifyarea);
+	
+	
+	//loginview = ui.addSubView(jum, navtabs);
+	
+	//showView([navbar, jum]);
+	//view = ui.addSubViewById('mcontent', [loginview]);
+	ui.addSubViewToMain([jum]);
+}
+
+
