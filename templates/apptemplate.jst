@@ -3,8 +3,10 @@
 * Date : {{datetime}}
 **/
 
-var webservices = new Webservices();
+var websx = new Webservices();
 var callbacks = new Callbacks();
+var forms = new FormViews();
+var views = new Views();
 
 var backendmodel = { //Global object which stores all backend reponses
 {% for formobj in formobjs %} '{{formobj.name.lower()}}': '', // placeholder for parsed {{formobj.name.lower()}}
@@ -13,15 +15,16 @@ var backendmodel = { //Global object which stores all backend reponses
 
 
 function appInit() {
-	appNavBar();
-	loadLandingView();
+	views.appNavBar();
+	views.initiallayout();
+	//loadLandingView();
 	backendTester();
 }
 
 //Function which calls all the backend APIs together
 function backendTester() {
     {% for formobj in formobjs %}
-    webservices.{{formobj.name.lower()}}(); //webservices call
+    websx.{{formobj.name.lower()}}(); //webservices call
     {% endfor %}
 }
 

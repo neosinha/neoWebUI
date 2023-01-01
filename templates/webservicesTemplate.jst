@@ -20,9 +20,16 @@ var Webservices = function () {
     this.{{ formobj.name.lower() }} = function() {
           //make an ajax call to API submit_{{formobj.name.lower() }}
           var dataobj =  {
-                  {% for fld in formobj.fields %} '{{fld.name.lower()}}' : '{{fld.value}}',
-                  {% endfor %}
+                  {% for fld in formobj.fields -%}
+                  '{{fld.name.lower()}}' : '{{fld.value}}',
+                  {% endfor -%}
                           };
+          var dataobj = {
+            {% for fld in formobj.fields -%}
+                '{{fld.name.lower()}}' : document.getElementById('{{formobj.name.lower()}}_{{fld.name.lower()}}_id').value,
+            {% endfor -%}
+            };
+
           $.ajax( {url : server+'/submit_{{formobj.name.lower()}}',
                   sync: false,
                   method: "POST",
@@ -30,7 +37,7 @@ var Webservices = function () {
                   success: callbacks.{{ formobj.name.lower() }}
                   });
     };//end of {{formobj.name.lower()}}
-    {% endfor %}
+    {% endfor -%}
 };
 
 
@@ -44,6 +51,11 @@ var Callbacks = function () {
     this.{{formobj.name.lower()}} = function (msg) {
         console.log('Callback {{formobj.name.lower()}}'+ msg );
         backendmodel['{{formobj.name.lower()}}'] = JSON.parse(msg);
+        var rarea = document.getElementById('{{formobj.name.lower()}}_rid');
+        rarea.innerHTML = '';
+        var px = ui.createElement('p', 'resel_{{formobj.name.lower()}}');
+        px.innerHTML = msg;
+        rarea.appendChild(px);
     }
 
  {% endfor %}

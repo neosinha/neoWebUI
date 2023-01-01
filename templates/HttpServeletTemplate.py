@@ -1,3 +1,10 @@
+# -----------------------
+# Copyright(c)
+# The contents of this file are automatically generated using a code-generator.
+# Any changes to this file shall get over-writen upon next re-geneation
+# Date: {{datetime}}
+# Author: {{os.USER.upper()}}
+# ---------------------------
 import os
 import argparse
 import base64, json
@@ -5,6 +12,7 @@ import logging
 import datetime, time, os, sys, shutil
 import cherrypy as HttpServer
 import inspect
+from pymongo import MongoClient
 
 class Webserver(object):
     '''
@@ -15,7 +23,7 @@ class Webserver(object):
 
     starttime = None
 
-    def __init__(self, staticdir=None, dbaddress=None):
+    def __init__(self, staticdir=None, dbhost=None):
         '''
         Constructor
         '''
@@ -29,6 +37,22 @@ class Webserver(object):
         uploaddir = os.path.join(self.staticdir, '..', 'uploads')
         if uploaddir:
             self.uploaddir = uploaddir
+
+            # DB Port Addresses
+            self.dbhost = '127.0.0.1'
+            self.dbport = 27017
+            if dbhost:
+                dbhostarr = dbhost.split(":")
+                self.dbhost = dbhostarr[0]
+                if dbhostarr[1]:
+                    self.dbport = int(dbhostarr[1])
+            logging.info("MongoDB Client: {} : {}".format(self.dbhost, self.dbport))
+            client = MongoClient(self.dbhost, self.dbport)
+
+            self.dbase = client['{{appname.lower()}}']
+            {% for formobj in formobjs -%}
+                self.db_{{formobj.name.lower()}} = self.dbase['{{formobj.name.lower()}}']
+            {% endfor %}
 
 
     @HttpServer.expose
@@ -62,7 +86,10 @@ class Webserver(object):
         datax = json.loads(data)
         ts = str(datetime.datetime.now())
         print("{{formname}} submission, {}".format(data))
-        robj = {'datetime' : ts, 'status' : True, 'data' : {'key' : 'data-{{formname}}'}}
+        robj = {'datetime' : ts, 'status' : True, 'data' : datax}
+        #reqobj = {datax}
+        self.db_{{formobj.name.lower()}}.replace_one(filter={'data' : datax},replacement=robj, upsert=True)
+
 
         return json.dumps(robj)
 
@@ -97,8 +124,10 @@ if __name__ == '__main__':
         port = 9005
         www = os.path.join(os.getcwd(), 'ui_www')
         ipaddr = '127.0.0.1'
-        dbip = '127.0.0.1'
-        logpath = os.path.join(os.getcwd(), 'log', 'webui-server.log')
+
+        dbip = '127.0.0.1:27017'
+
+        logpath = os.path.join(os.getcwd(), 'log', '{{appname.lower()}}-server.log')
         logdir = os.path.dirname(logpath)
         os.makedirs(logdir, exist_ok=True)
 
@@ -110,6 +139,9 @@ if __name__ == '__main__':
 
         ap.add_argument("-i", "--ipaddress", required=False, default='127.0.0.1',
                         help="IP Address to start HTTPServer")
+
+        ap.add_argument("-d", "--dbaddress", required=False, default='127.0.0.1:27017',
+                        help="Database IP Address")
 
         ap.add_argument("-s", "--static", required=False, default=www,
                         help="Static directory where WWW files are present")
@@ -125,6 +157,9 @@ if __name__ == '__main__':
 
         if args['ipaddress']:
             ipadd = args["ipaddress"]
+
+        if args['dbaddress']:
+            dbip = args["dbaddress"]
 
         if args['static']:
             staticwww = os.path.abspath(args['static'])
@@ -154,6 +189,6 @@ if __name__ == '__main__':
             'tools.staticdir.dir': staticwww}
         }
 
-        HttpServer.quickstart(Webserver (staticdir=staticwww), '/', conf)
+        HttpServer.quickstart(Webserver (staticdir=staticwww, dbhost=dbip), '/', conf)
         #wbsx = Webserver(staticdir=staticwww)
         #wbsx.getjs()
