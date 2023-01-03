@@ -2,6 +2,7 @@ import datetime
 import os.path, shutil, errno, json
 
 import pandas as pd
+import numpy as np
 from jinja2 import Environment, FileSystemLoader
 
 class Scaffold(object):
@@ -39,6 +40,13 @@ class Scaffold(object):
 
         self.forms = pd.read_excel(appfile, sheet_name='Forms')
         print(self.forms)
+
+        self.backend = pd.read_excel(appfile, sheet_name='Backend')
+        self.backend['TableName'].replace({np.nan: None}, inplace=True)
+        #df.col_name.replace({np.nan: None}, inplace=True)
+        self.backend['TableName'] = self.backend['TableName'].astype(str)
+        print(self.backend)
+
         
 
         self.initgenerationvars()
@@ -72,6 +80,11 @@ class Scaffold(object):
         for idx, formx in enumerate(formnames):
             print(f"=====Form: {formx}")
             fields = self.forms.loc[self.forms['Form Name'] == formx]
+            formtype = self.backend.loc[self.backend['Form Name'] == formx]
+            print("FormType: {}".format(formtype['RecordType'].values[0]))
+            tablename = None
+            print("FormTable: {}".format(formtype['TableName'].values[0]))
+
             fldarr = []
             for fld in fields.iterrows():
                 print(fld[1]['FieldName'], fld[1]['Type'], fld[1]['Default'])
@@ -80,7 +93,10 @@ class Scaffold(object):
                            'id': '{}_id'.format(fld[1]['FieldName']),
                            'value' : fld[1]['Default']}
                 fldarr.append(formdef)
-            formdefs.append({'name' : formx, 'fields' : fldarr})
+            formdefs.append({'name': formx, 'fields': fldarr,
+                             'recordtype' : formtype['RecordType'].values[0],
+                             'tablename' : formtype['TableName'].values[0]
+                             })
 
         print(formdefs)
         self.gen_model['formobjs'] = formdefs

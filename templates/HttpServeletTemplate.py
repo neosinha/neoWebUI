@@ -9,7 +9,7 @@ import os
 import argparse
 import base64, json
 import logging
-import datetime, time, os, sys, shutil
+import datetime, time,  os, sys, shutil
 import cherrypy as HttpServer
 import inspect
 from pymongo import MongoClient
@@ -20,8 +20,9 @@ class Webserver(object):
     '''
 
     staticdir = None
-
     starttime = None
+
+
 
     def __init__(self, staticdir=None, dbhost=None):
         '''
@@ -78,23 +79,84 @@ class Webserver(object):
     @HttpServer.expose()
     def submit_{{formobj.name.lower()}}(self, data=None):
         """
-        Submission API for {{formname}}
+        Submission API for {{formobj.name}}
         Form shall submit a stringified JSON object with the following fields,
          {% for fld in formobj.fields %} ## {{fld.name}}, Type: {{fld.type}}
          {% endfor %}
         """
         datax = json.loads(data)
-        ts = str(datetime.datetime.now())
-        print("{{formname}} submission, {}".format(data))
-        robj = {'datetime' : ts, 'status' : True, 'data' : datax}
-        #reqobj = {datax}
-        self.db_{{formobj.name.lower()}}.replace_one(filter={'data' : datax},replacement=robj, upsert=True)
+        ts = datetime.datetime.now()
+        print("{} : {{formobj.name.lower()}} submission, {}".format(ts, data))
+        {% if formobj.recordtype != 'authorization' %}
+        robj = {'datetime' : {'date' : ts,
+                              'day' : ts.day,
+                              'month' : ts.month,
+                              'year' : ts.year,
+                              'minute' : ts.minute,
+                              'hour' : ts.hour,
+                              'second' : ts.second},
+                'status' : True, 'data' : datax}
+        {% endif -%}
 
+        {% if formobj.recordtype =='timeseries' %}
+        ## Generating timeseries code for {{formobj.name.lower()}}, object would be time-stamped and stored
+        res = self.db_{{formobj.name.lower()}}.insert_one(robj)
+        {% endif -%}
+        {% if formobj.recordtype =='stateful' %}
+        ## Generating Stateful code for {{formobj.name.lower()}}, object is updated if it exists others created new
+        res = self.db_{{formobj.name.lower()}}.replace_one(filter={'data' : datax},
+                                        replacement=robj, upsert=True)
+        {% endif -%}
+        {% if formobj.recordtype == 'authorization' %}
+        ## Generating Authorization code for {{formobj.name.lower()}}, reccord fields are looked up and compared
+        ## TableName: {{ formobj.tablename.lower() }}
+        query = {
+            {% for fld in formobj.fields -%}
+                'data.{{fld.name}}': datax['{{fld.name}}'],
+            {% endfor -%}
+        }
 
-        return json.dumps(robj)
+        authres = self.db_{{formobj.tablename.lower()}}.find_one(query, {'_id': 0})
+        robj = {'authorization' : False}
+        if authres:
+            robj = {'authorization' : True}
 
+        robj = res
+        robj['timestamp'] = ts
+
+        {% endif -%}
+
+        return json.dumps(robj, default=self.datetimencoder)
+
+    {% endfor -%}
+
+    {% for formobj in formobjs %}
+    {% if formobj.recordtype == 'timeseries' %}
+    @HttpServer.expose()
+    def qtable_{{formobj.name}}(self, last=10):
+        """
+        Returns records which match datime.date > last criterion
+        last 10, implies return everything in the last 10 days
+        This data is a timeseries data from database table {{formobj.name.lower()}}
+        """
+        rightnow = datetime.datetime.now()
+        otimestamp = datetime.timedelta(days=last)
+        recds = list(self.db_{{formobj.name}}.find({'datetime.date' : {'$gt' : otimestamp}}, {'_id' : 0}))
+
+        return json.dumps(recds, default=self.datetimencoder)
+    {% endif %}
     {% endfor %}
 
+
+    def datetimencoder(self, o):
+        """
+        Converts Datatime object to string
+        :param self:
+        :param o:
+        :return:
+        """
+        if isinstance(o, datetime.datetime):
+            return o.__str__()
 
     @HttpServer.expose()
     def getjs(self):
