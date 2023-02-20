@@ -8,20 +8,24 @@ from jinja2 import Environment, FileSystemLoader
 class Scaffold(object):
 
 
-    def __init__(self, appmodel=None, exportdir=None, appname=None):
+    def __init__(self, appname=None, exportdir=None, appdef=None):
         """
         Initialize App Model
-        :param appmodel:
+        :param appdef:
         """
-        appfile = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
+
+        appfile = os.path.join(os.getcwd(), 'appmodel', 'app-model') #deffault app model
+        if appdef:
+            appfile = appdef
+        #appfile = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
         self.templatedir = os.path.join(os.getcwd(), 'templates')
         self.environment = Environment(loader=FileSystemLoader(self.templatedir))
 
 
         dtx = str(datetime.datetime.today()).split(' ')[0].replace('-', '')
         self.datex = dtx
-        self.appname = f'App'
-        if appname:
+        self.appname = 'App1'
+        if appdef:
             self.appname = appname
 
         self.exportdir = os.path.join(os.getcwd(), 'exports', self.appname)
@@ -31,8 +35,8 @@ class Scaffold(object):
         print("Setting export dir to {}".format(self.exportdir))
         os.makedirs(self.exportdir, exist_ok=True)
 
-        if appmodel:
-            if os.path.exists(appmodel):
+        if appdef:
+            if os.path.exists(appdef):
                 print(f"Found app modelfile {appfile}")
 
         self.about = pd.read_excel(appfile, sheet_name='About')
@@ -68,6 +72,30 @@ class Scaffold(object):
         for key, val in os.environ.items():
             self.gen_model['os'][key] = val
 
+    def extractTabViews(self):
+        """
+        Extracts Tab Names and Form Views
+        :return:
+        """
+        tabnames = self.backend['TabView'].unique()
+        print(tabnames)
+        print("=== TabViews ===")
+        tabviews = []
+        for idx, tabx in enumerate(tabnames):
+            form_rows = self.backend.loc[self.backend['TabView'] == tabx]
+            formnames = list(form_rows['Form Name'])
+            tabviewname = None
+            print(tabx, formnames)
+            if len(formnames):
+                #get form objects for each form
+                for fname in formnames:
+                    formdefs = self.getFormbyName(formname=fname)
+                    print(formdefs)
+
+                tabviews.append( {'tabview' : tabx, 'forms' : formnames} )
+
+        print("\t===**** TabViews **** ===")
+        return tabviews
 
     def generateFormDefs(self):
         """
@@ -93,6 +121,7 @@ class Scaffold(object):
                            'id': '{}_id'.format(fld[1]['FieldName']),
                            'value' : fld[1]['Default']}
                 fldarr.append(formdef)
+
             formdefs.append({'name': formx, 'fields': fldarr,
                              'recordtype' : formtype['RecordType'].values[0],
                              'tablename' : formtype['TableName'].values[0]
@@ -101,6 +130,24 @@ class Scaffold(object):
         print(formdefs)
         self.gen_model['formobjs'] = formdefs
         return formdefs
+
+    def getFormbyName(self, formname=None):
+        """
+        Gets the Form Name
+        :param formname:
+        :return:
+        """
+        formdefs = self.generateFormDefs()
+        forms = []
+        for idx, formdef in enumerate(self.generateFormDefs()):
+            print(f"TabForm: {formname}")
+            if formname == formdef['name']:
+                print("\t\t--- ",formname, formdef['name'])
+                forms.append(formdef)
+        print("\t\t--- ", len(forms))
+        return forms
+
+
 
 
     def generateFormSubmissions(self):
@@ -181,6 +228,7 @@ class Scaffold(object):
         context['appname'] = self.appname
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
+        context['tabviews'] = self.extractTabViews()
 
         formvf = os.path.join(self.exportdir, 'ui_www', 'js','views.forms.js')
         with open(formvf, mode="w", encoding="utf-8") as results:
@@ -214,13 +262,17 @@ class Scaffold(object):
 
 if __name__ == '__main__':
     print("Starting Scaffolding")
+    xlmodel = os.path.join(os.getcwd(), 'appmodel', 'packet-manager.xlsx')
     xlmodel = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
-    scf = Scaffold(appmodel=xlmodel, appname='App1')
+
+    scf = Scaffold(appdef=xlmodel, appname='Raedam')
     scf.generateFormDefs()
     scf.generateFormSubmissions()
     scf.generateWebServices()
     scf.generateAppService()
     scf.generateIndexFile()
+    #scf.generateTabViews()
     scf.generateViews()
+
 
 

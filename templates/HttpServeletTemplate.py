@@ -183,7 +183,7 @@ class Webserver(object):
 
 # main code section
 if __name__ == '__main__':
-        port = 9005
+        portmum = 9005
         www = os.path.join(os.getcwd(), 'ui_www')
         ipaddr = '127.0.0.1'
 
@@ -196,8 +196,8 @@ if __name__ == '__main__':
         cascPath = os.path.abspath(os.getcwd())
 
         ap = argparse.ArgumentParser()
-        ap.add_argument("-p", "--port", required=False, default=6001,
-                        help="Port number to start HTTPServer.")
+        ap.add_argument("-p", "--port", required=False, default=portmum,
+                        help="Port number to start HTTPServer, defaults to {}".format(portmum))
 
         ap.add_argument("-i", "--ipaddress", required=False, default='127.0.0.1',
                         help="IP Address to start HTTPServer")

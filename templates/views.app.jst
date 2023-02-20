@@ -18,6 +18,13 @@ var Views = function() {
 	    tabs.push({'name' : "AppInfo" , 'content' : this.appInfo() }); //add content for Basic App Info
 	    tabs.push({'name' : "Forms" , 'content' : this.formview() }); //add the tab content for Forms View
 
+	    // Tab Views //
+	     {% for tabv in tabviews -%}
+	     tabs.push({'name' : "{{tabv.tabview}}", 'content': this.gettabview_{{tabv.tabview.lower()}}() }); //add tabbed view {{tabv.tabview}}
+	     {% endfor -%}
+
+
+
 	    var navtabs= ui.navtabs('tabbed', 'justified', tabs); //initialize the tab object
 
 	    var notifyarea = ui.createElement('div', 'notify'); //add a notify area
@@ -45,11 +52,11 @@ var Views = function() {
 
     } ;
 
-    //Sample Voew Code Routines
+    //Sample View Code Routines
     this.formview = function() {
         var divx = ui.createElement('div', 'formview');
         divx.appendChild(ui.br());
-        divx.innerHTML = 'Example Content which shows Forms for {{appname}}';
+        divx.innerHTML = 'Example Content for Form {{appname}}';
 
         {% for formobj in formobjs %}
                 //websx.{{formobj.name.lower()}}(); //webservices call
@@ -85,6 +92,21 @@ var Views = function() {
         return divx;
 
     } ;
+
+    {% for tabv in tabviews %}
+    //Generate TabView for {tabv.tabview}
+    this.gettabview_{{tabv.tabview.lower()}} = function() {
+        var divx = ui.createElement('div', "{{tabv.tabview.lower()}}_rootid");
+        var p = ui.createElement('p', "{{tabv.tabview.lower()}}_childid");
+        p.innerHTML = '<h3>{{tabv.tabview}}</h3>';
+        //append the formchild
+        divx.appendChild(p);
+        return divx;
+	}
+    {% endfor -%}
+
+
+
 
 
 
