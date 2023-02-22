@@ -87,12 +87,15 @@ class Scaffold(object):
             tabviewname = None
             print(tabx, formnames)
             if len(formnames):
+                formobjs = {}
                 #get form objects for each form
                 for fname in formnames:
-                    formdefs = self.getFormbyName(formname=fname)
-                    print(formdefs)
+                    #formdefs = self.getFormbyName(formname=fname)
+                    formobjs[fname] = self.getFormbyName(formname=fname)
+                    print(json.dumps(formobjs, indent=2))
 
-                tabviews.append( {'tabview' : tabx, 'forms' : formnames} )
+                #Add to tab only if there is at least 1 form in the tabview
+                tabviews.append( {'tabview' : tabx, 'forms' : formnames, 'formobjs': formobjs} )
 
         print("\t===**** TabViews **** ===")
         return tabviews
@@ -127,7 +130,7 @@ class Scaffold(object):
                              'tablename' : formtype['TableName'].values[0]
                              })
 
-        print(formdefs)
+        #print(formdefs)
         self.gen_model['formobjs'] = formdefs
         return formdefs
 
@@ -137,13 +140,15 @@ class Scaffold(object):
         :param formname:
         :return:
         """
-        formdefs = self.generateFormDefs()
+        formdefs = self.gen_model['formobjs']
         forms = []
-        for idx, formdef in enumerate(self.generateFormDefs()):
-            print(f"TabForm: {formname}")
+        for idx, formdef in enumerate(formdefs):
+            #print(f"TabForm: {formname}")
             if formname == formdef['name']:
-                print("\t\t--- ",formname, formdef['name'])
+                print("\t\t--- ", formname, formdef['name'])
                 forms.append(formdef)
+                break
+
         print("\t\t--- ", len(forms))
         return forms
 

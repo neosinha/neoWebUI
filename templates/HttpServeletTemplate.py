@@ -106,6 +106,8 @@ class Webserver(object):
         ## Generating Stateful code for {{formobj.name.lower()}}, object is updated if it exists others created new
         res = self.db_{{formobj.name.lower()}}.replace_one(filter={'data' : datax},
                                         replacement=robj, upsert=True)
+
+        robj = res
         {% endif -%}
         {% if formobj.recordtype == 'authorization' %}
         ## Generating Authorization code for {{formobj.name.lower()}}, reccord fields are looked up and compared
@@ -121,7 +123,6 @@ class Webserver(object):
         if authres:
             robj = {'authorization' : True}
 
-        robj = res
         robj['timestamp'] = ts
 
         {% endif -%}
