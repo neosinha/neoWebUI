@@ -267,10 +267,15 @@ class Scaffold(object):
 
 if __name__ == '__main__':
     print("Starting Scaffolding")
+
     xlmodel = os.path.join(os.getcwd(), 'appmodel', 'packet-manager.xlsx')
     xlmodel = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
+    xlmodel = os.path.join(os.getcwd(), 'appmodel', 'raedam-enforcement.xlsx')
 
-    scf = Scaffold(appdef=xlmodel, appname='Raedam')
+    #xlmodel = os.path.join(os.getcwd(), 'appmodel', 'summarize.xlsx')
+
+    #scf = Scaffold(appdef=xlmodel, appname='Summarize')
+    scf = Scaffold(appdef=xlmodel, appname='Patrol')
     scf.generateFormDefs()
     scf.generateFormSubmissions()
     scf.generateWebServices()

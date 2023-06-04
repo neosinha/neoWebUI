@@ -81,7 +81,7 @@ var Views = function() {
          divx.appendChild(fx);
 
          var subx = ui.createElement('button', '{{fname.lower()}}_submit');
-         subx.setAttribute('class', 'btn btn-warning btn-lg');
+         subx.setAttribute('class', 'btn btn-warning btn-lg block');
          subx.innerHTML = 'Submit';
          subx.onclick = function() {
                 forms.readform_{{fname.lower()}}();
