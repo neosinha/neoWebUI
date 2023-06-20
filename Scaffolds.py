@@ -51,6 +51,10 @@ class Scaffold(object):
         self.backend['TableName'] = self.backend['TableName'].astype(str)
         print(self.backend)
 
+        self.pageviews = pd.read_excel(appfile, sheet_name='PageViews')
+        #print(self.pageviews)
+
+
         
 
         self.initgenerationvars()
@@ -72,6 +76,8 @@ class Scaffold(object):
         for key, val in os.environ.items():
             self.gen_model['os'][key] = val
 
+
+
     def extractTabViews(self):
         """
         Extracts Tab Names and Form Views
@@ -92,13 +98,84 @@ class Scaffold(object):
                 for fname in formnames:
                     #formdefs = self.getFormbyName(formname=fname)
                     formobjs[fname] = self.getFormbyName(formname=fname)
-                    print(json.dumps(formobjs, indent=2))
+                    #print("FormObj: ", json.dumps(formobjs, indent=2))
 
                 #Add to tab only if there is at least 1 form in the tabview
-                tabviews.append( {'tabview' : tabx, 'forms' : formnames, 'formobjs': formobjs} )
+                tabviews.append( {'tabview' : tabx, 'forms' : formnames, 'formobjs': formobjs,
+                                  } )
 
         print("\t===**** TabViews **** ===")
         return tabviews
+
+
+    def extractPageSequence(self):
+        """
+        Extracts Page load Sequence
+        :return:
+        """
+        pages = self.pageviews
+        print(pages)
+        loadseq = pages['LoadSequence'].unique()[:-1]
+        print("PgSeq=== \n",loadseq)
+
+        pgsequence = {}
+        for idx, pseq in enumerate(loadseq):
+            sequence = self.pageviews.loc[self.pageviews['LoadSequence'] == pseq]
+            seq_cond = list(sequence['PageView'])
+            pgsequence[pseq] = seq_cond
+
+        print(pgsequence)
+
+        return pgsequence
+
+
+    def extractPageViews(self):
+        """
+        Extracts Page Views
+        :return:
+        """
+        pagenames = self.backend['PageView'].unique()[:-1]
+        print(pagenames)
+        print("=== Page Names ===")
+        pageviews = {}
+        for idx, pagex in enumerate(pagenames):
+            tab_rows = self.backend.loc[self.backend['PageView'] == pagex]
+            tab_names = list(tab_rows['TabView'])
+            tabviewname = None
+            #print(pagex, tab_names)
+            tabviews = []
+            pageviews[pagex] = []
+
+            for tabx in tab_names:
+                form_rows = self.backend.loc[self.backend['TabView'] == tabx]
+                formnames = list(form_rows['Form Name'])
+                tabviewname = None
+                #print("tabs",tabx, formnames)
+                if len(formnames):
+                    formobjs = {}
+                    # get form objects for each form
+                    for fname in formnames:
+                        # formdefs = self.getFormbyName(formname=fname)
+                        formobjs[fname] = self.getFormbyName(formname=fname)
+                        #print("FormObj: ", json.dumps(formobjs, indent=2))
+
+                    # Add to tab only if there is at least 1 form in the tabview
+                    if 'NaN' in str(tabx).lower():
+                        print(f"Skipping {tabx}")
+                    else:
+                        tabviews.append({'tabview': tabx, 'forms': formnames, 'formobjs': formobjs,
+                                 })
+                if len(tabviews):
+                    if 'NaN' in str(pagex).lower():
+                        print("Skipping empty pages")
+                    else:
+                        pageviews[pagex] = tabviews
+
+        print("\t===**** PageViews **** ===")
+        print("\t--> ", len(pageviews))
+        #print(json.dumps(pageviews, indent=2))
+
+        return pageviews
 
     def generateFormDefs(self):
         """
@@ -108,6 +185,8 @@ class Scaffold(object):
         self.forms.set_index('Form Name')
         formnames = self.forms['Form Name'].unique()
         formdefs = []
+        authdefs = []
+
         for idx, formx in enumerate(formnames):
             print(f"=====Form: {formx}")
             fields = self.forms.loc[self.forms['Form Name'] == formx]
@@ -125,13 +204,17 @@ class Scaffold(object):
                            'value' : fld[1]['Default']}
                 fldarr.append(formdef)
 
+
             formdefs.append({'name': formx, 'fields': fldarr,
                              'recordtype' : formtype['RecordType'].values[0],
                              'tablename' : formtype['TableName'].values[0]
                              })
 
+
         #print(formdefs)
         self.gen_model['formobjs'] = formdefs
+        self.gen_model['authobjs'] = authdefs
+
         return formdefs
 
     def getFormbyName(self, formname=None):
@@ -228,11 +311,15 @@ class Scaffold(object):
         """
         formviews = self.environment.get_template('formviews.jst')
         appviews  = self.environment.get_template('views.app.jst')
+        pageviews  = self.environment.get_template('pageviews.app.jst')
 
         context = {}
         context['appname'] = self.appname
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
+        context['pageviews'] = self.extractPageViews()
+        context['pagesequence'] = self.extractPageSequence()
+
         context['tabviews'] = self.extractTabViews()
 
         formvf = os.path.join(self.exportdir, 'ui_www', 'js','views.forms.js')
@@ -245,8 +332,10 @@ class Scaffold(object):
             results.write(appviews.render(context))
             print(f"... wrote {appviewf}")
 
-
-
+        pageviewf = os.path.join(self.exportdir, 'ui_www', 'js', 'pageviews.app.js')
+        with open(pageviewf, mode="w", encoding="utf-8") as results:
+            results.write(pageviews.render(context))
+            print(f"... wrote {pageviewf}")
 
     def copytemplateFiles(self):
         print("Copying WebServer files")
@@ -271,11 +360,12 @@ if __name__ == '__main__':
     xlmodel = os.path.join(os.getcwd(), 'appmodel', 'packet-manager.xlsx')
     xlmodel = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
     xlmodel = os.path.join(os.getcwd(), 'appmodel', 'raedam-enforcement.xlsx')
+    xlmodel = os.path.join(os.getcwd(), 'appmodel', 'pexpress.xlsx')
 
     #xlmodel = os.path.join(os.getcwd(), 'appmodel', 'summarize.xlsx')
 
     #scf = Scaffold(appdef=xlmodel, appname='Summarize')
-    scf = Scaffold(appdef=xlmodel, appname='Patrol')
+    scf = Scaffold(appdef=xlmodel, appname='PExpress')
     scf.generateFormDefs()
     scf.generateFormSubmissions()
     scf.generateWebServices()

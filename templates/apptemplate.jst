@@ -7,25 +7,31 @@ var websx = new Webservices();
 var callbacks = new Callbacks();
 var forms = new FormViews();
 var views = new Views();
+var pageviews = new Pages();
 
-var backendmodel = { //Global object which stores all backend reponses
+var backendmodel = { //Global object which stores all backend responses
 {% for formobj in formobjs %} '{{formobj.name.lower()}}': '', // placeholder for parsed {{formobj.name.lower()}}
 {% endfor %}
     }
 
 
+
 function appInit() {
-	views.appNavBar();
-	views.initiallayout();
+
+	//views.appNavBar();
+	views.pagelayout();
+
+	//views.initiallayout();
 	//loadLandingView();
-	backendTester();
+
+	//backendTester();
 }
 
 //Function which calls all the backend APIs together
 function backendTester() {
     {% for formobj in formobjs %}
     websx.{{formobj.name.lower()}}(); //webservices call
-    {% endfor %}
+    {%- endfor %}
 }
 
 function loadLandingView() {

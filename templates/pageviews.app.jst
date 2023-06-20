@@ -1,0 +1,48 @@
+//defines the page level structures
+
+var ui = new Bootstrap();
+
+var Pages = function() {
+
+    {% for pgkey, pgobj in pageviews.items() -%}
+    //Generate PageView for {{pgkey}}
+    this.pageview_{{pgkey.lower()}} = function() {
+        var divx = ui.createElement('div', '{{pgkey.lower()}}_container');
+        divx.setAttribute('class', 'well');
+        divx.innerHTML = "<h2>View for {{pgkey}}</h2>";
+
+        {% for tview in pgobj -%}
+        //append tab view {{tview.tabview}}
+        // divx.appendChild(this.tabview_{{tview.tabview.lower()}}());
+        {% endfor -%}
+
+        return divx;
+    };
+    {% endfor %}
+
+
+    {%- for pgkey, pgobj in pageviews.items() -%}
+    {%- for tview in pgobj -%}
+    this.tabview_{{tview.tabview.lower()}} = function() {
+      {%- if tview.forms|length > 1 -%}
+      {%- for fview in tview.forms -%}
+        var tabs = new Array();
+        tabs.push({'name' : "{{fview}}" , 'content' :  forms.createview_{{fview}}() }); //tab for {{fview}}
+      {% endfor %}
+      var ftab = ui.navtabs('pg_{{tview.tabview.lower()}}_tab', 'justified', tabs);
+
+      {% else %}
+      {% for fview in tview.forms %}
+       var ftab = forms.createview_{{fview}}(); //including formview for {{fview}}
+      {% endfor %}
+
+      {% endif %}
+
+       return ftab;
+    }; //Tabview for {{tview.tabview.lower() }} in page {{pgkey.lower()}}
+
+    {% endfor %}
+    {% endfor %}
+
+};
+

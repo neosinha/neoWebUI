@@ -5,6 +5,18 @@ var ui = new Bootstrap();
 //var forms = new FormViews();
 var Views = function() {
 
+    this.pagelayout = function() {
+        //initialize a jumbotron object
+        var h1x = ui.h3(null, 'Content for {{appname}}', null);
+        var jum = ui.jumbotron('view1', h1x);
+
+
+        var notifyarea = ui.createElement('div', 'notify'); //add a notify area
+        ui.addSubViewToMain([jum]);
+
+    }; //end of pagelayout
+
+
     //Initial Layout
     this.initiallayout = function() {
 
@@ -106,7 +118,6 @@ var Views = function() {
         return divx;
 	}
     {% endfor -%}
-
 
 
 
