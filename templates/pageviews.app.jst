@@ -4,6 +4,13 @@ var ui = new Bootstrap();
 
 var Pages = function() {
 
+    //Default Layout
+    this.pageview_defaultlayout = function() {
+        views.appNavBar();
+	    views.initiallayout();
+	    //backendTester();
+    }
+
     {% for pgkey, pgobj in pageviews.items() -%}
     //Generate PageView for {{pgkey}}
     this.pageview_{{pgkey.lower()}} = function() {
@@ -11,10 +18,19 @@ var Pages = function() {
         divx.setAttribute('class', 'well');
         divx.innerHTML = "<h2>View for {{pgkey}}</h2>";
 
+        var tabs = new Array();
         {% for tview in pgobj -%}
-        //append tab view {{tview.tabview}}
-        // divx.appendChild(this.tabview_{{tview.tabview.lower()}}());
+        tabs.push({'name' : '{{tview.tabview}}', 'content' : views.gettabview_{{tview.tabview.lower() }}()}); //append tab view {{tview.tabview}}
         {% endfor -%}
+
+        //divx.appendChild(this.tabview_tview.tabview.lower() ());
+
+        var navtabs= ui.navtabs('tabbed_{{pgkey.lower()}}', 'justified', tabs); //initialize the tab object
+        divx.appendChild(navtabs);
+
+        var dmx = document.getElementById('mcontent');
+        dmx.innerHTML = '';
+        dmx.appendChild(divx);
 
         return divx;
     };

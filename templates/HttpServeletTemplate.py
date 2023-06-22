@@ -114,7 +114,7 @@ class Webserver(object):
         ## TableName: {{ formobj.tablename.lower() }}
         query = {
             {% for fld in formobj.fields -%}
-                'data.{{fld.name}}': datax['{{fld.name}}'],
+                'data.{{fld.name}}': datax['{{fld.name.lower()}}'],
             {% endfor -%}
         }
 

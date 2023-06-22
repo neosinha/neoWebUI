@@ -121,8 +121,12 @@ class Scaffold(object):
         pgsequence = {}
         for idx, pseq in enumerate(loadseq):
             sequence = self.pageviews.loc[self.pageviews['LoadSequence'] == pseq]
-            seq_cond = list(sequence['PageView'])
+            seq_cond = list(sequence['PageView'])[0].lower()
             pgsequence[pseq] = seq_cond
+        if 'init' in pgsequence:
+            print(f"App wouuld be initialized by pageview.{pgsequence['init']}")
+        else:
+            pgsequence['init'] = 'defaultlayout'
 
         print(pgsequence)
 
@@ -228,11 +232,11 @@ class Scaffold(object):
         for idx, formdef in enumerate(formdefs):
             #print(f"TabForm: {formname}")
             if formname == formdef['name']:
-                print("\t\t--- ", formname, formdef['name'])
+                #print("\t\t--- ", formname, formdef['name'])
                 forms.append(formdef)
                 break
 
-        print("\t\t--- ", len(forms))
+        #print("\t\t--- ", len(forms))
         return forms
 
 
@@ -265,6 +269,7 @@ class Scaffold(object):
         context['appname'] = self.appname
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
+        context['pagesequence'] = self.extractPageSequence()
 
         websxfile = os.path.join(self.exportdir, 'ui_www', 'js','webservices.js')
         with open(websxfile, mode="w", encoding="utf-8") as results:
@@ -281,7 +286,10 @@ class Scaffold(object):
         context['appname'] = self.appname
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
+        context['pagesequence'] = self.extractPageSequence()
 
+        print("Page Seq")
+        print(f"\t{context['pagesequence']}")
         appfile = os.path.join(self.exportdir, 'ui_www', 'js', 'app.js')
         with open(appfile, mode="w", encoding="utf-8") as results:
             results.write(websx.render(context))
@@ -318,7 +326,7 @@ class Scaffold(object):
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
         context['pageviews'] = self.extractPageViews()
-        context['pagesequence'] = self.extractPageSequence()
+
 
         context['tabviews'] = self.extractTabViews()
 

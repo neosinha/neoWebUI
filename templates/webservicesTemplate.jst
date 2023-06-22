@@ -56,6 +56,16 @@ var Callbacks = function () {
         var px = ui.createElement('p', 'resel_{{formobj.name.lower()}}');
         px.innerHTML = msg;
         rarea.appendChild(px);
+
+        {%- for trx, pgname in pagesequence.items() -%}
+        {% if 'callback:' in trx %}
+        {% if formobj.name.lower() in trx %}
+            //{{trx}} {{pgname}}
+         pviews.pageview_{{pgname.lower()}}();
+        {% endif %}
+        {% endif %}
+
+        {% endfor %}
     }
 
  {% endfor %}

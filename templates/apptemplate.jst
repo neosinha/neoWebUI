@@ -7,7 +7,7 @@ var websx = new Webservices();
 var callbacks = new Callbacks();
 var forms = new FormViews();
 var views = new Views();
-var pageviews = new Pages();
+var pviews = new Pages();
 
 var backendmodel = { //Global object which stores all backend responses
 {% for formobj in formobjs %} '{{formobj.name.lower()}}': '', // placeholder for parsed {{formobj.name.lower()}}
@@ -18,9 +18,9 @@ var backendmodel = { //Global object which stores all backend responses
 
 function appInit() {
 
-	//views.appNavBar();
-	views.pagelayout();
+    pviews.pageview_{{ pagesequence['init'] }}();
 
+	//views.appNavBar();
 	//views.initiallayout();
 	//loadLandingView();
 
