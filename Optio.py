@@ -19,7 +19,7 @@ class Optio(object):
         if appdef:
             appfile = appdef
         #appfile = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
-        self.templatedir = os.path.join(os.getcwd(), 'template_copy')
+        self.templatedir = os.path.join(os.getcwd(), 'template_excel')
         self.environment = Environment(loader=FileSystemLoader(self.templatedir))
 
 
