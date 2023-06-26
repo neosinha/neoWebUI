@@ -4,8 +4,9 @@ import os.path, shutil, errno, json
 import pandas as pd
 import numpy as np
 from jinja2 import Environment, FileSystemLoader
+import yaml
 
-class Scaffold(object):
+class Optio(object):
 
 
     def __init__(self, appname=None, exportdir=None, appdef=None):
@@ -34,31 +35,16 @@ class Scaffold(object):
 
         print("Setting export dir to {}".format(self.exportdir))
         os.makedirs(self.exportdir, exist_ok=True)
-
+        self.backendmodel = {}
         if appdef:
             if os.path.exists(appdef):
                 print(f"Found app modelfile {appfile}")
-
-        self.about = pd.read_excel(appfile, sheet_name='About')
-        print(self.about)
-
-        self.forms = pd.read_excel(appfile, sheet_name='Forms')
-        print(self.forms)
-
-        self.backend = pd.read_excel(appfile, sheet_name='Backend')
-        self.backend['TableName'].replace({np.nan: None}, inplace=True)
-        #df.col_name.replace({np.nan: None}, inplace=True)
-        self.backend['TableName'] = self.backend['TableName'].astype(str)
-        print(self.backend)
-
-        self.pageviews = pd.read_excel(appfile, sheet_name='PageViews')
-        #print(self.pageviews)
-
-
-        
-
-        self.initgenerationvars()
-        self.copytemplateFiles()
+                with open(appfile, 'r') as yfile:
+                    appdef = yaml.safe_load(yfile)
+                    print(json.dumps(appdef, indent=2))
+                    self.backendmodel = appdef
+                    #self.initgenerationvars()
+                    #self.copytemplateFiles()
 
 
     def initgenerationvars(self):
@@ -69,7 +55,7 @@ class Scaffold(object):
         home_dir = os.environ['HOME']
         self.gen_model = {}
 
-        self.gen_model['appname'] = self.appname
+        #self.gen_model['appname'] = self.appname
         self.gen_model['datetime'] = self.datex
 
         self.gen_model['os'] = {}
@@ -186,40 +172,11 @@ class Scaffold(object):
         Use Form definitions to generate JSON definitions JS Files
         :return:
         """
-        self.forms.set_index('Form Name')
-        formnames = self.forms['Form Name'].unique()
         formdefs = []
-        authdefs = []
-
-        for idx, formx in enumerate(formnames):
-            print(f"=====Form: {formx}")
-            fields = self.forms.loc[self.forms['Form Name'] == formx]
-            formtype = self.backend.loc[self.backend['Form Name'] == formx]
-            print("FormType: {}".format(formtype['RecordType'].values[0]))
-            tablename = None
-            print("FormTable: {}".format(formtype['TableName'].values[0]))
-
-            fldarr = []
-            for fld in fields.iterrows():
-                print(fld[1]['FieldName'], fld[1]['Type'], fld[1]['Default'])
-                formdef = {'name' : fld[1]['FieldName'],
-                           'type' : fld[1]['Type'],
-                           'id': '{}_id'.format(fld[1]['FieldName']),
-                           'value' : fld[1]['Default']}
-                fldarr.append(formdef)
+        print(json.dumps(self.backendmodel['forms'], indent=4))
 
 
-            formdefs.append({'name': formx, 'fields': fldarr,
-                             'recordtype' : formtype['RecordType'].values[0],
-                             'tablename' : formtype['TableName'].values[0]
-                             })
-
-
-        #print(formdefs)
-        self.gen_model['formobjs'] = formdefs
-        self.gen_model['authobjs'] = authdefs
-
-        return formdefs
+        return self.backendmodel['forms']
 
     def getFormbyName(self, formname=None):
         """
@@ -266,7 +223,6 @@ class Scaffold(object):
         """
         websx = self.environment.get_template('webservicesTemplate.jst')
         context = {}
-        context['appname'] = self.appname
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
         context['pagesequence'] = self.extractPageSequence()
@@ -322,13 +278,13 @@ class Scaffold(object):
         pageviews  = self.environment.get_template('pageviews.app.jst')
 
         context = {}
-        context['appname'] = self.appname
+        context['appname'] = self.backendmodel['appname']
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
-        context['pageviews'] = self.extractPageViews()
+        #context['pageviews'] = self.extractPageViews()
 
 
-        context['tabviews'] = self.extractTabViews()
+        #context['tabviews'] = self.extractTabViews()
 
         formvf = os.path.join(self.exportdir, 'ui_www', 'js','views.forms.js')
         with open(formvf, mode="w", encoding="utf-8") as results:
@@ -363,24 +319,13 @@ class Scaffold(object):
 
 
 if __name__ == '__main__':
-    print("Starting Scaffolding")
+    print("Starting Optio Engine..")
 
-    xlmodel = os.path.join(os.getcwd(), 'appmodel', 'packet-manager.xlsx')
-    xlmodel = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
-    xlmodel = os.path.join(os.getcwd(), 'appmodel', 'raedam-enforcement.xlsx')
-    xlmodel = os.path.join(os.getcwd(), 'appmodel', 'pexpress.xlsx')
-
-    #xlmodel = os.path.join(os.getcwd(), 'appmodel', 'summarize.xlsx')
-
-    #scf = Scaffold(appdef=xlmodel, appname='Summarize')
-    scf = Scaffold(appdef=xlmodel, appname='PExpress')
+    model = os.path.join(os.getcwd(), 'amodel', 'pexpress.yml')
+    scf = Optio(appdef=model, appname='PExpress')
     scf.generateFormDefs()
-    scf.generateFormSubmissions()
-    scf.generateWebServices()
-    scf.generateAppService()
-    scf.generateIndexFile()
-    #scf.generateTabViews()
     scf.generateViews()
+
 
 
 

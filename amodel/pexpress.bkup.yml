@@ -1,0 +1,63 @@
+## Scaffold YAML 1.1
+appname: "PExpress"
+pages:
+  - page: "Login"
+    load: "init"
+    subviews:
+      - subview : "loginregister"
+
+  - page: "mainapp"
+    load: "callback:sigin"
+    subviews:
+      - subview: "PExpress"
+
+views:
+  - view:
+      name: "loginregister"
+      tabs: "loginregistter_tab"
+        - tab : "Login"
+            content: "form:signin" # bring
+
+        - tab : "Register"
+            content: "form:signup"
+
+  - view:
+     name: "mainapp"
+     tabs: "AppLoad"
+       - tab : "Tickers"
+          content: ""
+       - tab: "Portfolio"
+       - tab: "News"
+
+# Each form has a front-end and back-end cooupling
+# Froneend coupling
+## A form view
+## A place for a form response
+
+#Backend coupling
+forms:
+  - form: "signin"
+    table: "authtable"
+    recordtype: "authorization"
+    fields:
+      - field: "userid"
+        type: "email"
+        default: "johndoe@email.com"
+      - field: "password"
+        type : "password"
+        default: "johndoespassword"
+
+  - form: "signup"
+      table: "authtable"
+      recordtype: "stateful"
+      fields:
+        - field: "userid"
+          type: "email"
+          default: "johndoe@email.com"
+        - field: "password"
+          type: "password"
+          default: "johndoespassword"
+        - field: "Full Name"
+          type: "text"
+          default: "John Doe"
+

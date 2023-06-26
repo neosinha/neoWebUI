@@ -1,0 +1,53 @@
+## Scaffold YAML 1.1
+appname: "PExpress"
+
+pages:
+  - page: "Login"
+    load: "init"
+    subviews:
+      - subview : "loginregister"
+      - subview : "landingfooter"
+
+  - page: "mainapp"
+    load: "callback:sigin"
+    subviews:
+      - subview: "PExpress"
+      - subview: "appfooter"
+
+views:
+  - view: "loginregister"
+    tabview:
+      - name: "Login"
+        content: "signin"
+      - name : "Register"
+        content: "signup"
+  - view: "landingfooter"
+    content: "backend:get_loginfooter()"
+  - view: "mainapp"
+    content: "callback:signin"
+
+forms:
+  - form: "signin"
+    table: "authtable"
+    recordtype: "authorization"
+    fields:
+      - field: "userid"
+        type: "email"
+        default: "johndoe@email.com"
+      - field: "password"
+        type : "password"
+        default: "johndoespassword"
+  - form: "signup"
+    table: "authtable"
+    recordtype: "stateful"
+    fields:
+      - field: "userid"
+        type: "email"
+        default: "johndoe@email.com"
+      - field: "password"
+        type: "password"
+        default: "johndoespassword"
+      - field: "Full Name"
+        type: "text"
+        default: "John Doe"
+

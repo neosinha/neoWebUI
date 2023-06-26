@@ -1,3 +1,4 @@
 cherrypy
 pymongo
 jinja2
+pyyaml
