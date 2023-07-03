@@ -52,7 +52,7 @@ class Webserver(object):
 
             self.dbase = client['{{appname.lower()}}']
             {% for formobj in formobjs -%}
-                self.db_{{formobj.name.lower()}} = self.dbase['{{formobj.name.lower()}}']
+                self.db_{{formobj.form.lower()}} = self.dbase['{{formobj.form.lower()}}']
             {% endfor %}
 
 
@@ -77,16 +77,16 @@ class Webserver(object):
 
    {% for formobj in formobjs %}
     @HttpServer.expose()
-    def submit_{{formobj.name.lower()}}(self, data=None):
+    def submit_{{formobj.form.lower()}}(self, data=None):
         """
-        Submission API for {{formobj.name}}
+        Submission API for {{formobj.form}}
         Form shall submit a stringified JSON object with the following fields,
          {% for fld in formobj.fields %} ## {{fld.name}}, Type: {{fld.type}}
          {% endfor %}
         """
         datax = json.loads(data)
         ts = datetime.datetime.now()
-        print("{} : {{formobj.name.lower()}} submission, {}".format(ts, data))
+        print("{} : {{formobj.form.lower()}} submission, {}".format(ts, data))
         {% if formobj.recordtype != 'authorization' %}
         robj = {'datetime' : {'date' : ts,
                               'day' : ts.day,
@@ -99,26 +99,26 @@ class Webserver(object):
         {% endif -%}
 
         {% if formobj.recordtype =='timeseries' %}
-        ## Generating timeseries code for {{formobj.name.lower()}}, object would be time-stamped and stored
-        res = self.db_{{formobj.name.lower()}}.insert_one(robj)
+        ## Generating timeseries code for {{formobj.form.lower()}}, object would be time-stamped and stored
+        res = self.db_{{formobj.form.lower()}}.insert_one(robj)
         {% endif -%}
         {% if formobj.recordtype =='stateful' %}
-        ## Generating Stateful code for {{formobj.name.lower()}}, object is updated if it exists others created new
-        res = self.db_{{formobj.name.lower()}}.replace_one(filter={'data' : datax},
+        ## Generating Stateful code for {{formobj.form.lower()}}, object is updated if it exists others created new
+        res = self.db_{{formobj.form.lower()}}.replace_one(filter={'data' : datax},
                                         replacement=robj, upsert=True)
 
         robj = res
         {% endif -%}
         {% if formobj.recordtype == 'authorization' %}
-        ## Generating Authorization code for {{formobj.name.lower()}}, reccord fields are looked up and compared
-        ## TableName: {{ formobj.tablename.lower() }}
+        ## Generating Authorization code for {{formobj.form.lower()}}, reccord fields are looked up and compared
+        ## TableName: {{ formobj.table.lower() }}
         query = {
             {% for fld in formobj.fields -%}
-                'data.{{fld.name}}': datax['{{fld.name.lower()}}'],
+                'data.{{fld.field}}': datax['{{fld.field.lower()}}'],
             {% endfor -%}
         }
 
-        authres = self.db_{{formobj.tablename.lower()}}.find_one(query, {'_id': 0})
+        authres = self.db_{{formobj.table.lower()}}.find_one(query, {'_id': 0})
         robj = {'authorization' : False}
         if authres:
             robj = {'authorization' : True}
@@ -134,7 +134,7 @@ class Webserver(object):
     {% for formobj in formobjs %}
     {% if formobj.recordtype == 'timeseries' %}
     @HttpServer.expose()
-    def qtable_{{formobj.name}}(self, last=10):
+    def qtable_{{formobj.form}}(self, last=10):
         """
         Returns records which match datime.date > last criterion
         last 10, implies return everything in the last 10 days
@@ -142,7 +142,7 @@ class Webserver(object):
         """
         rightnow = datetime.datetime.now()
         otimestamp = datetime.timedelta(days=last)
-        recds = list(self.db_{{formobj.name}}.find({'datetime.date' : {'$gt' : otimestamp}}, {'_id' : 0}))
+        recds = list(self.db_{{formobj.form}}.find({'datetime.date' : {'$gt' : otimestamp}}, {'_id' : 0}))
 
         return json.dumps(recds, default=self.datetimencoder)
     {% endif %}

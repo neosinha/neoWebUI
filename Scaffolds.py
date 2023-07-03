@@ -248,7 +248,7 @@ class Scaffold(object):
         :return:
         """
         formnames = self.forms['Form Name'].unique()
-        httpserver = self.environment.get_template('HttpServeletTemplate.py')
+        httpserver = self.environment.get_template('httpServelet.template.py')
         context = {}
         context['formobjs'] = self.generateFormDefs()
 
@@ -264,7 +264,7 @@ class Scaffold(object):
 
         :return:
         """
-        websx = self.environment.get_template('webservicesTemplate.jst')
+        websx = self.environment.get_template('webservices.template.js')
         context = {}
         context['appname'] = self.appname
         context['datetime'] = self.datex
@@ -318,8 +318,8 @@ class Scaffold(object):
         :return:
         """
         formviews = self.environment.get_template('formviews.jst')
-        appviews  = self.environment.get_template('views.app.jst')
-        pageviews  = self.environment.get_template('pageviews.app.jst')
+        appviews  = self.environment.get_template('views.app.js')
+        pageviews  = self.environment.get_template('pageviews.app.js')
 
         context = {}
         context['appname'] = self.appname

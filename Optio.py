@@ -19,7 +19,7 @@ class Optio(object):
         if appdef:
             appfile = appdef
         #appfile = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
-        self.templatedir = os.path.join(os.getcwd(), 'template_excel')
+        self.templatedir = os.path.join(os.getcwd(), 'templates')
         self.environment = Environment(loader=FileSystemLoader(self.templatedir))
 
 
@@ -41,10 +41,10 @@ class Optio(object):
                 print(f"Found app modelfile {appfile}")
                 with open(appfile, 'r') as yfile:
                     appdef = yaml.safe_load(yfile)
-                    print(json.dumps(appdef, indent=2))
+                    #print(json.dumps(appdef, indent=2))
                     self.backendmodel = appdef
-                    #self.initgenerationvars()
-                    #self.copytemplateFiles()
+                    self.initgenerationvars()
+                    self.copytemplateFiles()
 
 
     def initgenerationvars(self):
@@ -53,14 +53,12 @@ class Optio(object):
         :return:
         """
         home_dir = os.environ['HOME']
-        self.gen_model = {}
-
         #self.gen_model['appname'] = self.appname
-        self.gen_model['datetime'] = self.datex
+        self.backendmodel['datetime'] = self.datex
 
-        self.gen_model['os'] = {}
+        self.backendmodel['os'] = {}
         for key, val in os.environ.items():
-            self.gen_model['os'][key] = val
+            self.backendmodel['os'][key] = val
 
 
 
@@ -69,28 +67,9 @@ class Optio(object):
         Extracts Tab Names and Form Views
         :return:
         """
-        tabnames = self.backend['TabView'].unique()
-        print(tabnames)
+        tabviews = self.backend['tabviews']
         print("=== TabViews ===")
-        tabviews = []
-        for idx, tabx in enumerate(tabnames):
-            form_rows = self.backend.loc[self.backend['TabView'] == tabx]
-            formnames = list(form_rows['Form Name'])
-            tabviewname = None
-            print(tabx, formnames)
-            if len(formnames):
-                formobjs = {}
-                #get form objects for each form
-                for fname in formnames:
-                    #formdefs = self.getFormbyName(formname=fname)
-                    formobjs[fname] = self.getFormbyName(formname=fname)
-                    #print("FormObj: ", json.dumps(formobjs, indent=2))
 
-                #Add to tab only if there is at least 1 form in the tabview
-                tabviews.append( {'tabview' : tabx, 'forms' : formnames, 'formobjs': formobjs,
-                                  } )
-
-        print("\t===**** TabViews **** ===")
         return tabviews
 
 
@@ -99,24 +78,34 @@ class Optio(object):
         Extracts Page load Sequence
         :return:
         """
-        pages = self.pageviews
-        print(pages)
-        loadseq = pages['LoadSequence'].unique()[:-1]
-        print("PgSeq=== \n",loadseq)
+        pages = self.backendmodel['pages']
 
-        pgsequence = {}
-        for idx, pseq in enumerate(loadseq):
-            sequence = self.pageviews.loc[self.pageviews['LoadSequence'] == pseq]
-            seq_cond = list(sequence['PageView'])[0].lower()
-            pgsequence[pseq] = seq_cond
+        pgsequences = {}
+        for idx, pseq in enumerate(pages):
+            pgsequence = pseq['load']
+
         if 'init' in pgsequence:
             print(f"App wouuld be initialized by pageview.{pgsequence['init']}")
+            pgsequences[pseq['load']] = pseq['page']
         else:
-            pgsequence['init'] = 'defaultlayout'
+            pgsequences['init'] = 'defaultlayout'
 
-        print(pgsequence)
+        return pgsequences
 
-        return pgsequence
+    def extractInitPage(self):
+        """
+        Extracts the Init Page
+        :return:
+        """
+        pgs = self.backendmodel['pages']
+        defpage = None
+        for pg in pgs:
+            if pg['load'] == 'init':
+                defpage = pg
+                break
+
+        return defpage
+
 
 
     def extractPageViews(self):
@@ -124,46 +113,7 @@ class Optio(object):
         Extracts Page Views
         :return:
         """
-        pagenames = self.backend['PageView'].unique()[:-1]
-        print(pagenames)
-        print("=== Page Names ===")
-        pageviews = {}
-        for idx, pagex in enumerate(pagenames):
-            tab_rows = self.backend.loc[self.backend['PageView'] == pagex]
-            tab_names = list(tab_rows['TabView'])
-            tabviewname = None
-            #print(pagex, tab_names)
-            tabviews = []
-            pageviews[pagex] = []
-
-            for tabx in tab_names:
-                form_rows = self.backend.loc[self.backend['TabView'] == tabx]
-                formnames = list(form_rows['Form Name'])
-                tabviewname = None
-                #print("tabs",tabx, formnames)
-                if len(formnames):
-                    formobjs = {}
-                    # get form objects for each form
-                    for fname in formnames:
-                        # formdefs = self.getFormbyName(formname=fname)
-                        formobjs[fname] = self.getFormbyName(formname=fname)
-                        #print("FormObj: ", json.dumps(formobjs, indent=2))
-
-                    # Add to tab only if there is at least 1 form in the tabview
-                    if 'NaN' in str(tabx).lower():
-                        print(f"Skipping {tabx}")
-                    else:
-                        tabviews.append({'tabview': tabx, 'forms': formnames, 'formobjs': formobjs,
-                                 })
-                if len(tabviews):
-                    if 'NaN' in str(pagex).lower():
-                        print("Skipping empty pages")
-                    else:
-                        pageviews[pagex] = tabviews
-
-        print("\t===**** PageViews **** ===")
-        print("\t--> ", len(pageviews))
-        #print(json.dumps(pageviews, indent=2))
+        pageviews = self.backendmodel['pages']
 
         return pageviews
 
@@ -173,7 +123,7 @@ class Optio(object):
         :return:
         """
         formdefs = []
-        print(json.dumps(self.backendmodel['forms'], indent=4))
+        #print(json.dumps(self.backendmodel['forms'], indent=4))
 
 
         return self.backendmodel['forms']
@@ -204,15 +154,16 @@ class Optio(object):
         Generates Form Submission APIs for the WebServer
         :return:
         """
-        formnames = self.forms['Form Name'].unique()
-        httpserver = self.environment.get_template('HttpServeletTemplate.py')
+        httpserver = self.environment.get_template('httpServelet.template.py')
         context = {}
+        context['appname'] = self.backendmodel['appname']
         context['formobjs'] = self.generateFormDefs()
+        context['os'] = self.backendmodel['os']
 
         httpserverfile = os.path.join(self.exportdir, 'HttpServelet.py')
         with open(httpserverfile, mode="w", encoding="utf-8") as results:
-            print(json.dumps(self.gen_model, indent=2))
-            results.write(httpserver.render(self.gen_model))
+            #print(json.dumps(self.gen_model, indent=2))
+            results.write(httpserver.render(context))
             print(f"... wrote {httpserverfile}")
 
     def generateWebServices(self):
@@ -221,7 +172,7 @@ class Optio(object):
 
         :return:
         """
-        websx = self.environment.get_template('webservicesTemplate.jst')
+        websx = self.environment.get_template('webservices.template.js')
         context = {}
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
@@ -242,7 +193,7 @@ class Optio(object):
         context['appname'] = self.appname
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
-        context['pagesequence'] = self.extractPageSequence()
+        context['pagesequence'] = self.backendmodel['pages']
 
         print("Page Seq")
         print(f"\t{context['pagesequence']}")
@@ -274,19 +225,20 @@ class Optio(object):
         :return:
         """
         formviews = self.environment.get_template('formviews.jst')
-        appviews  = self.environment.get_template('views.app.jst')
-        pageviews  = self.environment.get_template('pageviews.app.jst')
+        appviews  = self.environment.get_template('views.app.js')
+        pageviews  = self.environment.get_template('pageviews.app.js')
 
         context = {}
         context['appname'] = self.backendmodel['appname']
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
-        #context['pageviews'] = self.extractPageViews()
+        context['pages'] = self.backendmodel['pages']
+        #context['views'] = self.backendmodel['views']
 
-
-        #context['tabviews'] = self.extractTabViews()
 
         formvf = os.path.join(self.exportdir, 'ui_www', 'js','views.forms.js')
+        print(f"Context: {context}")
+
         with open(formvf, mode="w", encoding="utf-8") as results:
             results.write(formviews.render(context))
             print(f"... wrote {formvf}")
@@ -317,15 +269,14 @@ class Optio(object):
                 raise
 
 
-
 if __name__ == '__main__':
     print("Starting Optio Engine..")
 
     model = os.path.join(os.getcwd(), 'amodel', 'pexpress.yml')
     scf = Optio(appdef=model, appname='PExpress')
     scf.generateFormDefs()
+    scf.generateFormSubmissions()
+    scf.generateWebServices()
+    scf.generateAppService()
+    scf.generateIndexFile()
     scf.generateViews()
-
-
-
-

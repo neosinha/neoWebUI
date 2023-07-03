@@ -1,0 +1,15 @@
+appname: "PExpressX"
+
+pages:
+  - page: "Login"
+    load: "init"
+
+    subviews:
+      - subview : "loginregister"
+      - subview : "landingfooter"
+
+  - page: "mainapp"
+    load: "callback:sigin"
+    subviews:
+      - subview: "PExpress"
+      - subview: "appfooter"

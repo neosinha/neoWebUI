@@ -31,7 +31,7 @@
 }
 
 .jumbotron {
-	background-color : #8e2edc;
+	background-color : #2e6ff;
 }
 
 .nav-justified {
@@ -77,4 +77,9 @@
      font-size: 24px;
      color: #761c19;
     margin-left: 60%;
+}
+
+.pagewell {
+    margin-top: 25%;
+	background-color : #efe9f4;
 }

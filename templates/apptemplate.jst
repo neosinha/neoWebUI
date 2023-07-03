@@ -10,7 +10,7 @@ var views = new Views();
 var pviews = new Pages();
 
 var backendmodel = { //Global object which stores all backend responses
-{% for formobj in formobjs %} '{{formobj.name.lower()}}': '', // placeholder for parsed {{formobj.name.lower()}}
+{% for formobj in formobjs %} '{{formobj.form.lower()}}': '', // placeholder for parsed {{formobj.form.lower()}}
 {% endfor %}
     }
 
@@ -18,19 +18,19 @@ var backendmodel = { //Global object which stores all backend responses
 
 function appInit() {
 
-    pviews.pageview_{{ pagesequence['init'] }}();
-
-	//views.appNavBar();
-	//views.initiallayout();
-	//loadLandingView();
-
+    {% for pg in pagesequence %}
+    {% if pg.load == 'init' -%}
+    pviews.pageview_{{pg.page.lower() }}();
+    {% endif %}
+    {% endfor %}
 	//backendTester();
+
 }
 
 //Function which calls all the backend APIs together
 function backendTester() {
     {% for formobj in formobjs %}
-    websx.{{formobj.name.lower()}}(); //webservices call
+    websx.{{formobj.form.lower()}}(); //webservices call
     {%- endfor %}
 }
 

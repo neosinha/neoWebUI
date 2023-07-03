@@ -1,11 +1,10 @@
 ## Scaffold YAML 1.1
-appname: "PExpress"
-
+appname: "PExpressX"
 pages:
   - page: "Login"
     load: "init"
     subviews:
-      - subview : "loginregister"
+      - subview : "tabview:loginregister"
       - subview : "landingfooter"
 
   - page: "mainapp"
@@ -14,17 +13,17 @@ pages:
       - subview: "PExpress"
       - subview: "appfooter"
 
-views:
-  - view: "loginregister"
-    tabview:
-      - name: "Login"
-        content: "signin"
-      - name : "Register"
-        content: "signup"
-  - view: "landingfooter"
-    content: "backend:get_loginfooter()"
-  - view: "mainapp"
-    content: "callback:signin"
+
+tabviews:
+  - tabview: "loginregister"
+    tabs:
+      - tab: "Login"
+        content: "form:signin"
+      - tab: "Register"
+        content: "form:signup"
+
+
+
 
 forms:
   - form: "signin"

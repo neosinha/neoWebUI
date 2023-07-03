@@ -17,26 +17,26 @@ var backendmodel = null;
  */
 var Webservices = function () {
     {% for formobj in formobjs %}
-    this.{{ formobj.name.lower() }} = function() {
-          //make an ajax call to API submit_{{formobj.name.lower() }}
+    this.{{ formobj.form.lower() }} = function() {
+          //make an ajax call to API submit_{{formobj.form.lower() }}
           var dataobj =  {
                   {% for fld in formobj.fields -%}
-                  '{{fld.name.lower()}}' : '{{fld.value}}',
+                  '{{fld.field.lower()}}' : '{{fld.value}}',
                   {% endfor -%}
                           };
           var dataobj = {
             {% for fld in formobj.fields -%}
-                '{{fld.name.lower()}}' : document.getElementById('{{formobj.name.lower()}}_{{fld.name.lower()}}_id').value,
+                '{{fld.field.lower()}}' : document.getElementById('{{formobj.form.lower()}}_{{fld.field.lower()}}_id').value,
             {% endfor -%}
             };
 
-          $.ajax( {url : server+'/submit_{{formobj.name.lower()}}',
+          $.ajax( {url : server+'/submit_{{formobj.form.lower()}}',
                   sync: false,
                   method: "POST",
                   data : {'data': JSON.stringify(dataobj)},
-                  success: callbacks.{{ formobj.name.lower() }}
+                  success: callbacks.{{ formobj.form.lower() }}
                   });
-    };//end of {{formobj.name.lower()}}
+    };//end of {{formobj.form.lower()}}
     {% endfor -%}
 };
 
@@ -48,18 +48,18 @@ var Webservices = function () {
 var Callbacks = function () {
  {% for formobj in formobjs %}
 
-    this.{{formobj.name.lower()}} = function (msg) {
-        console.log('Callback {{formobj.name.lower()}}'+ msg );
-        backendmodel['{{formobj.name.lower()}}'] = JSON.parse(msg);
-        var rarea = document.getElementById('{{formobj.name.lower()}}_rid');
+    this.{{formobj.form.lower()}} = function (msg) {
+        console.log('Callback {{formobj.form.lower()}}'+ msg );
+        backendmodel['{{formobj.form.lower()}}'] = JSON.parse(msg);
+        var rarea = document.getElementById('{{formobj.form.lower()}}_rid');
         rarea.innerHTML = '';
-        var px = ui.createElement('p', 'resel_{{formobj.name.lower()}}');
+        var px = ui.createElement('p', 'resel_{{formobj.form.lower()}}');
         px.innerHTML = msg;
         rarea.appendChild(px);
 
         {%- for trx, pgname in pagesequence.items() -%}
         {% if 'callback:' in trx %}
-        {% if formobj.name.lower() in trx %}
+        {% if formobj.form.lower() in trx %}
             //{{trx}} {{pgname}}
          pviews.pageview_{{pgname.lower()}}();
         {% endif %}
