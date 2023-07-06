@@ -23,8 +23,8 @@ var Pages = function() {
         var divx_{{pview.subview}} = ui.createElement('div', 'cont_{{pview.subview}}' );
         divx_{{pview.subview}}.innerHTML = '<h3>Subview {{pview.subview}}</h3><hr>';
         //var divx_{{pview.subview}} = this.create_{{pview.subview.lower()}}();
-        //
         divx.appendChild(divx_{{pview.subview}});
+
         {% endfor %}
 
         var mx = document.getElementById('mcontent');

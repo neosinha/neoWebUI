@@ -281,7 +281,7 @@ class Scaffold(object):
         Generates Initial App Template
         :return:
         """
-        websx = self.environment.get_template('apptemplate.jst')
+        websx = self.environment.get_template('app.template.js')
         context = {}
         context['appname'] = self.appname
         context['datetime'] = self.datex
@@ -317,7 +317,7 @@ class Scaffold(object):
         Generates Form views code
         :return:
         """
-        formviews = self.environment.get_template('formviews.jst')
+        formviews = self.environment.get_template('views.forms.js')
         appviews  = self.environment.get_template('views.app.js')
         pageviews  = self.environment.get_template('pageviews.app.js')
 

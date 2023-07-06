@@ -75,6 +75,28 @@ var FormViews = function() {
 
 };
 
+var TableViews = function () {
+    {% for tblview in tableviews -%}
+    //create tableview {{tblview.table}}
+    var backend_{{tblview.table}} = null;
+    this.create_{{tblview.table}} = function () {
+        var divx = ui.createElement('div', 'tblview_{{tblview.table}}');
+        var tblheader = [{tblheader}];
+        //{{tblview.header}}
+        //{{tblview.content}}
+        if (backend_{{tblview.table}}){
+            var tbl = ui.createTable('tableview_{{tblview.table}}', 'basic', tblheader, backend_{{tblview.table}} );
+        } else {
+            divx.innerHTML = "<h3>Placeholder for Table</h3>";
+        }
+
+        return divx;
+    };
+
+    {% endfor %}
+
+
+};
 
 
 

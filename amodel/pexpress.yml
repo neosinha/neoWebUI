@@ -21,9 +21,13 @@ tabviews:
         content: "form:signin"
       - tab: "Register"
         content: "form:signup"
+      - tab: "Stocks"
+        content: "tableview:stocktable"
 
-
-
+tableviews:
+  - table : "stocktable"
+    header: "TCKR, Name, Closing Price"
+    content: "get:getstocktable"
 
 forms:
   - form: "signin"
@@ -36,6 +40,7 @@ forms:
       - field: "password"
         type : "password"
         default: "johndoespassword"
+
   - form: "signup"
     table: "authtable"
     recordtype: "stateful"

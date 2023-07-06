@@ -67,7 +67,7 @@ class Optio(object):
         Extracts Tab Names and Form Views
         :return:
         """
-        tabviews = self.backend['tabviews']
+        tabviews = self.backendmodel['tabviews']
         print("=== TabViews ===")
 
         return tabviews
@@ -159,6 +159,7 @@ class Optio(object):
         context['appname'] = self.backendmodel['appname']
         context['formobjs'] = self.generateFormDefs()
         context['os'] = self.backendmodel['os']
+        context['tableviews'] = self.backendmodel['tableviews']
 
         httpserverfile = os.path.join(self.exportdir, 'HttpServelet.py')
         with open(httpserverfile, mode="w", encoding="utf-8") as results:
@@ -177,6 +178,11 @@ class Optio(object):
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
         context['pagesequence'] = self.extractPageSequence()
+        context['tabviews'] = self.backendmodel['tabviews']
+        print(self.backendmodel['tabviews'])
+        context['tableviews'] = self.backendmodel['tableviews']
+
+        
 
         websxfile = os.path.join(self.exportdir, 'ui_www', 'js','webservices.js')
         with open(websxfile, mode="w", encoding="utf-8") as results:
@@ -188,7 +194,7 @@ class Optio(object):
         Generates Initial App Template
         :return:
         """
-        websx = self.environment.get_template('apptemplate.jst')
+        websx = self.environment.get_template('app.template.js')
         context = {}
         context['appname'] = self.appname
         context['datetime'] = self.datex
@@ -221,10 +227,10 @@ class Optio(object):
 
     def generateViews(self):
         """
-        Generates Form views code
+        Generates Form, Tab, Table views from code
         :return:
         """
-        formviews = self.environment.get_template('formviews.jst')
+        formviews = self.environment.get_template('views.forms.js')
         appviews  = self.environment.get_template('views.app.js')
         pageviews  = self.environment.get_template('pageviews.app.js')
 
@@ -232,13 +238,13 @@ class Optio(object):
         context['appname'] = self.backendmodel['appname']
         context['datetime'] = self.datex
         context['formobjs'] = self.generateFormDefs()
+        context['tabviews'] = self.extractTabViews()
         context['pages'] = self.backendmodel['pages']
-        #context['views'] = self.backendmodel['views']
+        context['tableviews'] = self.backendmodel['tableviews']
+
 
 
         formvf = os.path.join(self.exportdir, 'ui_www', 'js','views.forms.js')
-        print(f"Context: {context}")
-
         with open(formvf, mode="w", encoding="utf-8") as results:
             results.write(formviews.render(context))
             print(f"... wrote {formvf}")

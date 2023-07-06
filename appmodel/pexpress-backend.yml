@@ -1,0 +1,9 @@
+
+appname: "PExpressX"
+
+apis:
+  -api: "getstockstable"
+    params: None
+
+  -api: "getstockhistory"
+    params: "stock, startdate"

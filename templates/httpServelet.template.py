@@ -149,6 +149,47 @@ class Webserver(object):
     {% endfor %}
 
 
+    ##add Table View getters
+    {% for tview in tableviews -%}
+    #TabView: {{tview.table}}, {{tview.content}}
+    {% set tabtype = tview.content.split(":")[0] %}
+    {% set tabname = tview.content.split(":")[1] %}
+    {% if tabtype == "get" -%}
+    # Get TableView: {{tabname}}
+    @HttpServer.expose()
+    def {{tabname.lower()}}(self):
+        """
+        API route terminator for {{tabname.lower()}}
+        """
+        # Header: {{tview.header}}
+        # Create Sample data for test
+        tdata = []
+        {% set tdata=tview.header.split(",") -%}
+        for idx in range(0,5):
+            tobj = {}
+            {%-  for sdata in tdata %}
+            tobj["{{sdata.strip()}}"] =f"{{sdata.strip()}}{idx}"
+            {%- endfor %}
+            tdata.append(tobj) #tobj{{idx}}
+
+        return json.dumps(tdata)
+    {% endif -%}
+    {% endfor %}
+
+
+    @HttpServer.expose()
+    def getclientlog(self, clientlog):
+        """
+        Allows the client to upload the log to the server
+        :param self:
+        :param clientlog:
+        :return:
+        """
+        datax = json.loads(clientlog)
+        ts = datetime.datetime.now()
+        print(f"Log: {datax}")
+        robj = {"datetime": ts, "status": "OK"}
+        return json.dumps(robj)
 
 
 

@@ -81,39 +81,21 @@ var Views = function() {
         var p = ui.createElement('p', "{{tabv.tabview.lower()}}_childid");
         p.innerHTML = '<h3>{{tabv.tabview}}</h3>';
         divx.appendChild(p);
-
-        //append the formchild
-        {% for fname, formobj in tabv.formobjs.items() -%}
-        //FormObj {{formobj}}
-         var px = ui.createElement('p', 'para_{{fname.lower()}}');
-         px.innerHTML = 'Form Contents for {{fname}}';
-         divx.appendChild(px);
-
-         var fx = forms.createview_{{fname.lower()}}();
-         divx.appendChild(fx);
-
-         var subx = ui.createElement('button', '{{fname.lower()}}_submit');
-         subx.setAttribute('class', 'btn btn-warning btn-lg block');
-         subx.innerHTML = 'Submit';
-         subx.onclick = function() {
-                forms.readform_{{fname.lower()}}();
-                websx.{{fname.lower()}}();
-                }
-         //subx.setAttribute('onclick', 'function() {forms.readform_{{fname.lower()}}(); };' );
-
-        divx.appendChild(subx);
-        divx.appendChild(ui.br());
-
-
-        var divr = ui.createElement('div', '{{fname.lower()}}_rid'); //DIV area for Ajax Callback result
-        divr.setAttribute('class', 'well well-lg');
-        divx.appendChild(divr);
-
-        hrx = ui.createElement('hr', 'div_{{fname.lower()}}');
-        divx.appendChild(hrx);
-
+        //Code to build {{tabv.tabview}}
+        var tabobjs = new Array();
+        {% for tabobj in tabv.tabs -%}
+        {% set contenttype = tabobj.content.split(":")[0] -%}
+        {% set contentname = tabobj.content.split(":")[1] -%}
+        {% if contenttype == "form" -%}
+        tabobjs.push({'name': {{tabobj.tab}} , 'content' : forms.create_{{contentname}}() }); //Content Type: {{contenttype}}
+        {% endif -%}
+        {% if contenttype == "tableview" -%}
+        tabobjs.push({'name': {{tabobj.tab}} , 'content' : tableviews.create_{{contentname}}() }); //Content Type: {{contenttype}}
+        {% endif -%}
 
         {% endfor -%}
+        var navtabs= ui.navtabs('tabbed', 'justified', tabobjs); //initialize the tab object
+        dvix.appendChild(navtabs);
 
         return divx;
 	}

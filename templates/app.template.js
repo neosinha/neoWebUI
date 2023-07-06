@@ -2,12 +2,13 @@
 * AppName: {{appname}}
 * Date : {{datetime}}
 **/
-
+//Global objects
 var websx = new Webservices();
 var callbacks = new Callbacks();
 var forms = new FormViews();
 var views = new Views();
 var pviews = new Pages();
+var tableviews = new TableViews();
 
 var backendmodel = { //Global object which stores all backend responses
 {% for formobj in formobjs %} '{{formobj.form.lower()}}': '', // placeholder for parsed {{formobj.form.lower()}}
@@ -24,7 +25,7 @@ function appInit() {
     {% endif %}
     {% endfor %}
 	//backendTester();
-
+	websx.getclientlog(); //upload log to server
 }
 
 //Function which calls all the backend APIs together
