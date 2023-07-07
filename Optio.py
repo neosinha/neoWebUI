@@ -181,6 +181,7 @@ class Optio(object):
         context['tabviews'] = self.backendmodel['tabviews']
         print(self.backendmodel['tabviews'])
         context['tableviews'] = self.backendmodel['tableviews']
+        context['pages'] = self.backendmodel['pages']
 
         
 

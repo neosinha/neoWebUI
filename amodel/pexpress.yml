@@ -8,11 +8,10 @@ pages:
       - subview : "landingfooter"
 
   - page: "mainapp"
-    load: "callback:sigin"
+    load: "callback:signin"
     subviews:
-      - subview: "PExpress"
+      - subview: "tabview:pexpress"
       - subview: "appfooter"
-
 
 tabviews:
   - tabview: "loginregister"
@@ -21,13 +20,23 @@ tabviews:
         content: "form:signin"
       - tab: "Register"
         content: "form:signup"
-      - tab: "Stocks"
+  - tabview: "pexpress"
+    tabs:
+      - tab: "Stock"
         content: "tableview:stocktable"
+      - tab: "News"
+        content: "tableview:stocknews"
 
 tableviews:
   - table : "stocktable"
     header: "TCKR, Name, Closing Price"
     content: "get:getstocktable"
+
+  - table: "stocknews"
+    header: "TCKR, News"
+    content: "get:getstocknews"
+
+
 
 forms:
   - form: "signin"

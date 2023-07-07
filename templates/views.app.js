@@ -87,15 +87,16 @@ var Views = function() {
         {% set contenttype = tabobj.content.split(":")[0] -%}
         {% set contentname = tabobj.content.split(":")[1] -%}
         {% if contenttype == "form" -%}
-        tabobjs.push({'name': {{tabobj.tab}} , 'content' : forms.create_{{contentname}}() }); //Content Type: {{contenttype}}
+             //this.createview_signin
+        tabobjs.push({'name': "{{tabobj.tab}}" , 'content' : forms.createview_{{contentname}}() }); //Content Type: {{contenttype}}
         {% endif -%}
         {% if contenttype == "tableview" -%}
-        tabobjs.push({'name': {{tabobj.tab}} , 'content' : tableviews.create_{{contentname}}() }); //Content Type: {{contenttype}}
+        tabobjs.push({'name': "{{tabobj.tab}}" , 'content' : tableviews.create_{{contentname}}() }); //Content Type: {{contenttype}}
         {% endif -%}
 
         {% endfor -%}
         var navtabs= ui.navtabs('tabbed', 'justified', tabobjs); //initialize the tab object
-        dvix.appendChild(navtabs);
+        divx.appendChild(navtabs);
 
         return divx;
 	}

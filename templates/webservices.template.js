@@ -103,12 +103,18 @@ var Callbacks = function () {
         px.innerHTML = msg;
         rarea.appendChild(px);
 
-        {%- for trx, pgname in pagesequence.items() -%}
-        {% if 'callback:' in trx %}
-        {% if formobj.form.lower() in trx %}
-            //{{trx}} {{pgname}}
-         pviews.pageview_{{pgname.lower()}}();
-        {% endif %}
+
+        {%- for pview in pages -%}
+        // {{pview['load']}}
+        {% if 'callback:' in pview['load'] %}
+         // {{pview['load']}}, {{formobj.form.lower()}}
+         //{% set fname = pview['load'].split(':')[1] %}
+         //{% set fname = fname.lower() %}
+         //## Callback: Page: {{fname}} | Form:{{formobj.form.lower()}} |  PageLoad: {{pview.load}}
+        //{% if fname == formobj.form.lower() %}
+        // Pageview : {{pview.page}} is loaded from this callback
+        pviews.pageview_{{pview.page}}();
+        //{% endif %}
         {% endif %}
 
         {% endfor %}

@@ -21,7 +21,7 @@ var FormViews = function() {
                 'type'  : '{{fld.type}}',
                 'name'  :  '{{fld.field.lower()}}',
                 'id'    : '{{formobj.form.lower()}}_{{fld.field.lower()}}_id',
-                'value' : '{{fld.value}}' }
+                'value' : '{{fld.default}}' }
             );
          {% endfor %}
 
@@ -81,7 +81,7 @@ var TableViews = function () {
     var backend_{{tblview.table}} = null;
     this.create_{{tblview.table}} = function () {
         var divx = ui.createElement('div', 'tblview_{{tblview.table}}');
-        var tblheader = [{tblheader}];
+        var tblheader = [{{tblheader}}];
         //{{tblview.header}}
         //{{tblview.content}}
         if (backend_{{tblview.table}}){

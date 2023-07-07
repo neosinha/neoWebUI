@@ -52,7 +52,12 @@ class Webserver(object):
 
             self.dbase = client['{{appname.lower()}}']
             {% for formobj in formobjs -%}
-                self.db_{{formobj.form.lower()}} = self.dbase['{{formobj.form.lower()}}']
+            {% if formobj.table -%}
+            self.db_{{formobj.form.lower()}} = self.dbase['{{formobj.table.lower()}}']
+            {% else -%}
+            self.db_{{formobj.form.lower()}} = self.dbase['{{formobj.form.lower()}}']
+            {% endif -%}
+
             {% endfor %}
 
 
@@ -98,11 +103,17 @@ class Webserver(object):
                 'status' : True, 'data' : datax}
         {% endif -%}
 
+        {% if 'table' in formobj %}
+        {% set dbname = formobj['table'] %}
+        {% else %}
+        {% set dbname = formobj.form.lower() %}
+        {% endif -%}
+
         {% if formobj.recordtype =='timeseries' %}
         ## Generating timeseries code for {{formobj.form.lower()}}, object would be time-stamped and stored
+        ##tablename: {{dbanme}}
         res = self.db_{{formobj.form.lower()}}.insert_one(robj)
-        {% endif -%}
-        {% if formobj.recordtype =='stateful' %}
+        {% elif formobj.recordtype =='stateful' %}
         ## Generating Stateful code for {{formobj.form.lower()}}, object is updated if it exists others created new
         res = self.db_{{formobj.form.lower()}}.replace_one(filter={'data' : datax},
                                         replacement=robj, upsert=True)
@@ -118,7 +129,7 @@ class Webserver(object):
             {% endfor -%}
         }
 
-        authres = self.db_{{formobj.table.lower()}}.find_one(query, {'_id': 0})
+        authres = self.db_{{formobj.form.lower()}}.find_one(query, {'_id': 0})
         robj = {'authorization' : False}
         if authres:
             robj = {'authorization' : True}
