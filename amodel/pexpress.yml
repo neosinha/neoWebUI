@@ -26,6 +26,8 @@ tabviews:
         content: "tableview:stocktable"
       - tab: "News"
         content: "tableview:stocknews"
+      - tab: "Charts"
+        content: "tableview:stocknews"
 
 tableviews:
   - table : "stocktable"

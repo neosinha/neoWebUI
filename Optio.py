@@ -45,6 +45,21 @@ class Optio(object):
                     self.backendmodel = appdef
                     self.initgenerationvars()
                     self.copytemplateFiles()
+                    # copy a version of the YAML file to the export area
+                    self.copydefinitions(appfile)
+
+
+    def copydefinitions(self, appfile):
+        """
+        Copy YAML definitions to destination
+        :param appfile:
+        :return:
+        """
+
+        destf = os.path.join(self.exportdir, os.path.basename(appfile))
+        with open(destf, 'w') as filex:
+            yaml.dump(self.backendmodel, filex)
+
 
 
     def initgenerationvars(self):

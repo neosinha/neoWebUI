@@ -81,6 +81,7 @@ var TableViews = function () {
     var backend_{{tblview.table}} = null;
     this.create_{{tblview.table}} = function () {
         var divx = ui.createElement('div', 'tblview_{{tblview.table}}');
+        divx.appendChild(ui.hr());
         {% set hdrs = tblview.header.split(",") %}
         var tblheader = {{hdrs}};
         //TableView: {{tblview.table}} // {{tblview.header}}
