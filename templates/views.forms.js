@@ -81,14 +81,26 @@ var TableViews = function () {
     var backend_{{tblview.table}} = null;
     this.create_{{tblview.table}} = function () {
         var divx = ui.createElement('div', 'tblview_{{tblview.table}}');
-        var tblheader = [{{tblheader}}];
-        //{{tblview.header}}
-        //{{tblview.content}}
-        if (backend_{{tblview.table}}){
-            var tbl = ui.createTable('tableview_{{tblview.table}}', 'basic', tblheader, backend_{{tblview.table}} );
-        } else {
-            divx.innerHTML = "<h3>Placeholder for Table</h3>";
+        {% set hdrs = tblview.header.split(",") %}
+        var tblheader = {{hdrs}};
+        //TableView: {{tblview.table}} // {{tblview.header}}
+        var tdata = new Array();
+        for (idx = 0; idx < 5; idx++) {
+            var tobj = [];
+            {%- for sdata in hdrs %}
+            tobj.push("{{sdata.strip()}}"+"'"+idx+"'");
+            {%- endfor %}
+            tdata.push(tobj); //tobj{{idx}}
         }
+        //{{tblview.content}}
+        //Header: {{tblview.header}}
+        //if (backend_{{tblview.table}}){
+            //var tbl = ui.createTable('tableview_{{tblview.table}}', 'basic', tblheader, backend_{{tblview.table}} );
+            var tbl = ui.table('tableview_{{tblview.table}}', 'table-bordered', tblheader,  tdata);
+            divx.appendChild(tbl);
+        //} else {
+        //    divx.innerHTML = "<h3>Placeholder for Table</h3>";
+        //}
 
         return divx;
     };
