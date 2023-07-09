@@ -5,13 +5,13 @@ pages:
     load: "init"
     subviews:
       - subview : "tabview:loginregister"
-      - subview : "landingfooter"
+      - subview : "footer:landingfooter"
 
   - page: "mainapp"
     load: "callback:signin"
     subviews:
       - subview: "tabview:pexpress"
-      - subview: "appfooter"
+      - subview: "footer:appfooter"
 
 tabviews:
   - tabview: "loginregister"

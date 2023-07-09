@@ -31,7 +31,13 @@ var Pages = function() {
         var dsubview_{{viewname.lower()}} = views.gettabview_{{viewname.lower()}}();
         divx.appendChild(divx_{{viewname.lower() }});
         divx.appendChild(dsubview_{{viewname.lower() }});
+                {% elif viewtype == "footer" %}
+        var divx_{{viewname.lower()}} = ui.createElement('div', 'cont_{{viewname.lower()}}' );
+        divx.setAttribute('class', 'pagefooter');
+        divx_{{viewname.lower()}}.innerHTML = '<h3>Footer for {{viewname.lower()}} goes here</h3><hr>';
+        divx.appendChild(divx_{{viewname.lower() }});
                 {% endif %}
+
             {% else %}
                 {% set viewtype = "divx" -%}
                 {% set viewname = pview.subview %}
