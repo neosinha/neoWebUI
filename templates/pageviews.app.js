@@ -15,9 +15,8 @@ var Pages = function() {
     //Generate PageView for {{pgobj.page}}
     this.pageview_{{pgobj.page.lower()}} = function() {
         var divx = ui.createElement('div', '{{pgobj.page.lower()}}_container');
-        divx.setAttribute('class', 'well pagewell');
         divx.innerHTML = "<h2>View for {{pgobj.page.lower()}}</h2><BR>";
-
+        divx.setAttribute('class', 'pagewell');
         //add subviews
         {% for pview in pgobj.subviews -%}
             {% if ':' in pview.subview -%}
@@ -27,6 +26,7 @@ var Pages = function() {
         // Page Subview: {{pview.subview}}, {{viewname}}
                 {% if viewtype == "tabview" %}
         var divx_{{viewname.lower()}} = ui.createElement('div', 'cont_{{viewname.lower()}}' );
+        divx.setAttribute('class', 'page_{{viewname.lower()}}');
         divx_{{viewname.lower()}}.innerHTML = '<h3>Subview {{viewname.upper()}}</h3><hr>';
         var dsubview_{{viewname.lower()}} = views.gettabview_{{viewname.lower()}}();
         divx.appendChild(divx_{{viewname.lower() }});
