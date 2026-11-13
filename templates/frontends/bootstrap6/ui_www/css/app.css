@@ -1,0 +1,67 @@
+/*
+ * App styles for the bootstrap6 frontend adapter.
+ *
+ * The Bootstrap 3 rules for .checkbox, .form-inline, .jumbotron and
+ * .nav-tabs.nav-justified > .active > a no longer apply: those selectors do not
+ * exist in Bootstrap 6. Checkboxes and radios are styled by .check and .radio,
+ * and active tabs are marked on .nav-link.
+ */
+
+.brand {
+	font-family: 'Indie Flower', cursive;
+	font-size: 48px;
+	color: rgb(247, 218, 100);
+}
+
+.navbar {
+	margin-top: 10px;
+	background-color: #deeaee;
+}
+
+#loginland {
+	margin-top: 20%;
+	margin-left: 25%;
+	width: 50%;
+	border: #761c19;
+}
+
+.nav-justified {
+	border-bottom-style: hidden;
+	border-left-style: hidden;
+	border-right-style: hidden;
+	font-size: 20px;
+}
+
+.nav-tabs.nav-justified .nav-link.active {
+	border-bottom-color: #761c19;
+	border-bottom-style: double;
+	border-left-style: hidden;
+}
+
+#mainbody {
+	font-family: 'Montserrat', sans-serif;
+}
+
+#patrol_rid {
+	overflow-x: scroll;
+	overflow-y: scroll;
+	margin-top: 5%;
+	height: 25%;
+}
+
+.vrow {
+	font-family: 'Oswald';
+	font-size: 12px;
+}
+
+#navtbnlist {
+	font-family: 'Oswald';
+	font-size: 24px;
+	color: #761c19;
+	margin-left: 60%;
+}
+
+.pagewell {
+	margin-top: 25%;
+	background-color: #efe9f4;
+}

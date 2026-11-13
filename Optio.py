@@ -1,8 +1,6 @@
 import datetime
 import os.path, shutil, errno, json
 
-import pandas as pd
-import numpy as np
 from jinja2 import Environment, FileSystemLoader
 import yaml
 
@@ -20,6 +18,10 @@ class Optio(object):
             appfile = appdef
         #appfile = os.path.join(os.getcwd(), 'appmodel', 'app-model.xlsx')
         self.templatedir = os.path.join(os.getcwd(), 'templates')
+        # Frontend adapter: templates/frontends/<framework> overrides files in templates/.
+        # Default is bootstrap3, which is the plain templates/ directory.
+        self.framework = 'bootstrap3'
+        self.frontenddir = None
         self.environment = Environment(loader=FileSystemLoader(self.templatedir))
 
 
@@ -43,11 +45,28 @@ class Optio(object):
                     appdef = yaml.safe_load(yfile)
                     #print(json.dumps(appdef, indent=2))
                     self.backendmodel = appdef
+                    self.selectFrontend()
                     self.initgenerationvars()
                     self.copytemplateFiles()
                     # copy a version of the YAML file to the export area
                     self.copydefinitions(appfile)
 
+
+    def selectFrontend(self):
+        """
+        Pick the frontend adapter from the model:  frontend: {framework: bootstrap6}
+        Adapter templates are searched first, then the shared templates/ directory.
+        """
+        fw = (self.backendmodel.get('frontend') or {}).get('framework', 'bootstrap3')
+        if fw != 'bootstrap3':
+            fdir = os.path.join(self.templatedir, 'frontends', fw)
+            if not os.path.isdir(fdir):
+                avail = sorted(os.listdir(os.path.join(self.templatedir, 'frontends')))
+                raise ValueError("Unknown frontend '{}'. Available: bootstrap3, {}".format(fw, ', '.join(avail)))
+            self.frontenddir = fdir
+            self.environment = Environment(loader=FileSystemLoader([fdir, self.templatedir]))
+        self.framework = fw
+        print("Frontend framework: {}".format(fw))
 
     def copydefinitions(self, appfile):
         """
@@ -284,6 +303,10 @@ class Optio(object):
             shutil.rmtree(dst, ignore_errors=True)
         try:
             shutil.copytree(src, dst)
+            overlay = os.path.join(self.frontenddir, 'ui_www') if self.frontenddir else None
+            if overlay and os.path.isdir(overlay):
+                # adapter files (css, bootstrapui.js) replace the shared kit's copies
+                shutil.copytree(overlay, dst, dirs_exist_ok=True)
         except OSError as exc:  # python >2.5
             if exc.errno in (errno.ENOTDIR, errno.EINVAL):
                 shutil.copy(src, dst)
@@ -294,8 +317,13 @@ class Optio(object):
 if __name__ == '__main__':
     print("Starting Optio Engine..")
 
-    model = os.path.join(os.getcwd(), 'amodel', 'pexpress.yml')
-    scf = Optio(appdef=model, appname='PExpress')
+    import argparse
+    ap = argparse.ArgumentParser(description='Optio app generator')
+    ap.add_argument('--model', default=os.path.join(os.getcwd(), 'amodel', 'pexpress.yml'))
+    ap.add_argument('--appname', default='PExpress')
+    ap.add_argument('--exportdir', default=None)
+    args = ap.parse_args()
+    scf = Optio(appdef=args.model, appname=args.appname, exportdir=args.exportdir)
     scf.generateFormDefs()
     scf.generateFormSubmissions()
     scf.generateWebServices()

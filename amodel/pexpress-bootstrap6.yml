@@ -1,0 +1,70 @@
+## Scaffold YAML 1.1
+appname: "PExpressX"
+frontend:
+  framework: bootstrap6
+pages:
+  - page: "Login"
+    load: "init"
+    subviews:
+      - subview : "tabview:loginregister"
+      - subview : "footer:landingfooter"
+
+  - page: "mainapp"
+    load: "callback:signin"
+    subviews:
+      - subview: "tabview:pexpress"
+      - subview: "footer:appfooter"
+
+tabviews:
+  - tabview: "loginregister"
+    tabs:
+      - tab: "Login"
+        content: "form:signin"
+      - tab: "Register"
+        content: "form:signup"
+  - tabview: "pexpress"
+    tabs:
+      - tab: "Stock"
+        content: "tableview:stocktable"
+      - tab: "News"
+        content: "tableview:stocknews"
+      - tab: "Charts"
+        content: "tableview:stocknews"
+
+tableviews:
+  - table : "stocktable"
+    header: "TCKR, Name, Closing Price"
+    content: "get:getstocktable"
+
+  - table: "stocknews"
+    header: "TCKR, News"
+    content: "get:getstocknews"
+
+
+
+forms:
+  - form: "signin"
+    table: "authtable"
+    recordtype: "authorization"
+    fields:
+      - field: "userid"
+        type: "email"
+        default: "johndoe@email.com"
+      - field: "password"
+        type : "password"
+        default: "johndoespassword"
+
+  - form: "signup"
+    table: "authtable"
+    recordtype: "stateful"
+    fields:
+      - field: "userid"
+        type: "email"
+        default: "johndoe@email.com"
+      - field: "password"
+        type: "password"
+        default: "johndoespassword"
+      - field: "Full Name"
+        type: "text"
+        default: "John Doe"
+
